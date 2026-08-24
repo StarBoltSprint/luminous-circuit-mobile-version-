@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="The Luminous Circuit">
+  <rect width="32" height="32" rx="8" fill="#060814"/>
+  <path d="M3 25c5-12 21-12 26 0" fill="none" stroke="#2ee6ff" stroke-width="3.5" stroke-linecap="round"/>
+  <polygon points="16,3 27,27 5,27" fill="#8a6cff"/>
+  <polygon points="16,6 22,26 10,26" fill="#e8c56a"/>
+  <polygon points="16,11 19,16.5 16,21 13,16.5" fill="#2ee6ff"/>
+</svg>
