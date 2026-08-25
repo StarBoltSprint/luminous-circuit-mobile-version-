@@ -35,6 +35,8 @@ jobs:
           echo "PAGES_OUT=$OUT" >> "$GITHUB_ENV"
           ls -la "$OUT" | head
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ${{ env.PAGES_OUT }}
