@@ -13,8 +13,9 @@ import { buildWorld } from "./world";
 import { judgeCommission, type CommissionResult } from "./agents";
 import type { BuildPiece } from "./build-spec";
 import { readShape } from "./build-spec";
-import { addCharge, defaultLedger, HOWL_YIELD, CITY_CAP, simulateAway, type Ledger } from "./society";
-import { resolveHowl } from "./civic";
+import { addCharge, defaultLedger, HOWL_YIELD, CITY_CAP, simulateAway, tryWrite, type Ledger } from "./society";
+import { resolveHowl, enactCivic, howlVerb, civicBrief } from "./civic";
+import { gradeHowl, howlMult, gradeLine, aimingParent, markStood, dutyDone, talkWitness, stillHowl, shapeFits, markChain } from "./play";
 
 export type HudSnap = {
   zone: string | null;
@@ -23,6 +24,11 @@ export type HudSnap = {
   howls: number;
   nearby: { id: string; name: string; role: string; line: string; job: string } | null;
   howlProgress: number;
+  howlGrade?: string;
+  stood?: number;
+  howlHint?: string;
+  witness?: boolean;
+  still?: boolean;
   atHub: boolean;
   toast: string | null;
   heading: number;
@@ -355,6 +361,8 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 	let nearbyId = null;
 	let nearbyLine = "";
 	let howlHold = 0;
+	let howlGrade = "";
+	let stood = 0;
 	let toast = null;
 	let toastT = 0;
 	let saveAcc = 0;
@@ -425,7 +433,7 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 		}
 	}
 	function currentZone() {
-		for (const d of world.districts) if (Math.hypot(player.x - d.x, player.z - d.z) < d.radius) return d;
+		for (const d of world.districts) if (Math.hypot(player.x - d.x, player.z - d.z) < d.radius + 28) return d;
 		return null;
 	}
 	function persist() {
@@ -470,6 +478,9 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 	function emitHud() {
 		const zone = currentZone();
 		const cit = world.citizens.find((c) => c.mind.id === nearbyId);
+		const zoneLabel = zone?.label ?? (Math.hypot(player.x, player.z) < HUB.radius + 18 ? HUB.title : null);
+		const duty = civicBrief({ charge: ledger.charge, crystal: ledger.crystal, scripture: ledger.scripture, bids: marketSnap(ledger).bids }, zoneLabel);
+		const witnessed = talked.has(duty.keeper) || talkWitness(nearbyId, duty.keeper);
 		heavyHud += 1;
 		if (heavyHud >= 3) {
 			heavyHud = 0;
@@ -500,7 +511,12 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 				line: nearbyLine || cit.thought,
 				job: jobLabel(cit.job, cit.thought)
 			} : null,
-			howlProgress: howlHold / HUB.holdSec,
+			howlProgress: Math.min(1.6, Math.max(0, howlHold / HUB.holdSec)),
+			howlGrade: howlGrade || undefined,
+			stood: stood || undefined,
+			howlHint: howlHold < 0.04 ? undefined : (howlHold / HUB.holdSec >= 0.92 && howlHold / HUB.holdSec <= 1.18 ? "Release" : howlHold / HUB.holdSec > 1.18 ? "Let go" : "Hold through the gold"),
+			witness: witnessed,
+			still: stillHowl(player.speed),
 			atHub: Math.hypot(player.x, player.z) < HUB.radius,
 			toast,
 			heading: player.yaw,
@@ -707,9 +723,6 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 			if (zone && !visited.has(zone.id)) {
 				visited.add(zone.id);
 				showToast(`${zone.label} · ${zone.tag}`);
-				try {
-					navigator.vibrate?.(18);
-				} catch {}
 			}
 			let best = null;
 			let bestD = 12;
@@ -733,14 +746,37 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 			}
 			if (act.howl) {
 				howlHold += dt;
-				if (howlHold >= HUB.holdSec) {
+			} else if (howlHold >= 0.35) {
+					const held = howlHold;
 					howlHold = 0;
 					howls += 1;
+					let g = gradeHowl(held, HUB.holdSec);
+					const movingHowl = !stillHowl(player.speed);
+					const wouldLand = g === "held" || g === "true";
+					if (movingHowl && wouldLand) g = "thin";
+					howlGrade = g;
 					const z = currentZone();
 					const atHub = Math.hypot(player.x, player.z) < HUB.radius + 40;
 					const keeper = z?.keeper ?? (atHub ? "veyra" : null);
-					const r = resolveHowl(keeper, ledger);
-					resonance = Math.min(100, resonance + r.resonance);
+					const duty = civicBrief({ charge: ledger.charge, crystal: ledger.crystal, scripture: ledger.scripture, bids: marketSnap(ledger).bids }, z?.label ?? (atHub ? HUB.title : null));
+					const witnessed = talked.has(duty.keeper) || talkWitness(nearbyId, duty.keeper);
+					const r = resolveHowl(keeper, ledger, g);
+					if (g === "held") addCharge(ledger, 4);
+					if (!movingHowl && g === "held") addCharge(ledger, 1);
+					resonance = Math.min(100, resonance + Math.round(r.resonance * howlMult(g)));
+					let readingShape = null;
+					{
+						let bestD = 16;
+						for (const p of structures) {
+							const d = Math.hypot(p.x - player.x, p.z - player.z);
+							if (d < bestD) {
+								bestD = d;
+								readingShape = p.shape;
+							}
+						}
+					}
+					const howledShape = !!(readingShape && shapeFits(readingShape, keeper) && g !== "thin");
+					if (howledShape) resonance = Math.min(100, resonance + 2);
 					if (r.gather) {
 						gatherT = 18;
 						callGather(world.citizens);
@@ -748,19 +784,52 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 						gatherT = 10;
 						callWard(world.citizens, keeper, player.x, player.z);
 					}
+					const who = keeper ? world.citizens.find((c) => c.mind.id === keeper) : null;
+					if (who) {
+						try { noteLive(who, r.gather ? "gather" : "howl", r.toast); } catch {}
+					}
+					if (keeper && r.resonance >= 4 && g !== "thin") {
+						try {
+							const job = enactCivic(keeper, player.x, player.z);
+							const bit = job.pieces.slice(0, 1);
+							if (bit.length && world.applyPieces(bit) > 0) {
+								structures.push(...bit);
+								if (structures.length > 280) structures.splice(0, structures.length - 280);
+								lastCode = job.code;
+								season.push({ at: Date.now(), agent: keeper, text: r.toast });
+								if (season.length > 24) season.splice(0, season.length - 24);
+							}
+						} catch {}
+					}
+					const verb = howlVerb(keeper);
+					let msg = `${gradeLine(g, verb)} ${r.toast}`;
+					if (keeper === "aure" && aimingParent(player.yaw, player.pitch)) {
+						resonance = Math.min(100, resonance + 4);
+						msg = `${gradeLine(g, verb)} The parent is still on the horizon. You aimed.`;
+					}
+					if ((g === "true" || g === "held") && keeper) stood = markStood();
+					if (witnessed && (g === "true" || g === "held")) {
+						addCharge(ledger, 2);
+						msg += " You spoke first. The den knew you.";
+					}
+					if (keeper && (g === "true" || g === "held")) {
+						try {
+							const ch = markChain(keeper, g);
+							if (ch.complete) {
+								tryWrite(ledger);
+								tryWrite(ledger);
+								msg += " Tend, kiln, join — Iri named the sit.";
+							}
+						} catch {}
+					}
+					if (movingHowl && wouldLand) msg += " Stand. The den cannot hear a walking howl.";
+					if (!movingHowl && g === "held") msg += " You stood.";
+					if (howledShape) msg += " You howled the shape.";
 					absorbLive();
-					showToast(r.toast);
+					showToast(msg);
 					audio.howl();
-					try {
-						navigator.vibrate?.([
-							20,
-							40,
-							40
-						]);
-					} catch {}
 					persist();
-				}
-			} else howlHold = Math.max(0, howlHold - dt * 1.6);
+			} else howlHold = 0;
 		}
 		avatar.position.set(player.x, player.y, player.z);
 		avatar.rotation.y = player.yaw;
@@ -928,13 +997,6 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 				if (season.length > 24) season.splice(0, season.length - 24);
 				resonance = Math.min(100, resonance + 3);
 				audio.howl();
-				try {
-					navigator.vibrate?.([
-						12,
-						30,
-						18
-					]);
-				} catch {}
 			}
 			showToast(spoken);
 			persist();
@@ -959,13 +1021,6 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 				resonance = Math.min(100, resonance + Math.min(8, 2 + added));
 				assignHonor(world.citizens, agentId, pieces, line);
 				audio.howl();
-				try {
-					navigator.vibrate?.([
-						12,
-						30,
-						18
-					]);
-				} catch {}
 			}
 			showToast(line);
 			persist();

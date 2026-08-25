@@ -18,7 +18,7 @@ export const LOG_TABS = [
 
 export type LogTab = (typeof LOG_TABS)[number]["id"];
 
-const WORK_KINDS = new Set(["grow", "build", "forge", "flow", "harvest", "trade", "write", "hail", "watch", "crew", "stood", "walk", "home"]);
+const WORK_KINDS = new Set(["grow", "build", "forge", "flow", "harvest", "trade", "write", "hail", "watch", "crew", "stood", "walk", "home", "howl", "gather"]);
 
 function isIdleJob(job: string) {
   const j = (job || "").trim().toLowerCase();
@@ -31,6 +31,20 @@ function keeperOrder(job: string) {
   if (isIdleJob(j)) return 2;
   return 1;
 }
+
+function civicPip(id: string): "cyan" | "gold" | "gold-muted" | "keep" {
+  if (id === "seln") return "cyan";
+  if (id === "orren") return "gold";
+  if (id === "voss") return "gold-muted";
+  return "keep";
+}
+
+const PIP_FILL = {
+  cyan: "var(--color-accent)",
+  gold: "var(--color-gold)",
+  "gold-muted": "color-mix(in oklab, var(--color-gold) 58%, var(--color-muted))",
+  keep: "var(--color-violet)",
+} as const;
 
 function prettyLast(code: string) {
   if (!code) return "—";
@@ -168,13 +182,25 @@ export function LogSheet({
           <p className="sheet-kicker">Living circuit</p>
           <h3 className="sheet-title">City log</h3>
         </div>
-        <button type="button" className="hud-chip min-h-11 px-3" onClick={onClose}>Close</button>
+        <button type="button" className="log-close hud-chip min-h-11 px-3" onClick={onClose}>Close</button>
+        <nav className="flex w-full min-w-0 flex-wrap gap-1" aria-label="City log">
+          {LOG_TABS.map((t) => {
+            const on = tab === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                className={`log-sheet-tab min-h-11 bg-transparent px-3 text-sm font-semibold tracking-[0.04em] ${on ? "border-b-2 border-gold text-gold" : "border-b-2 border-transparent text-muted"}`}
+                data-on={tab === t.id}
+                aria-current={on ? "page" : undefined}
+                onClick={() => onTab(t.id)}
+              >
+                {t.label}
+              </button>
+            );
+          })}
+        </nav>
       </header>
-      <div className="log-tabs pointer-events-auto">
-        {LOG_TABS.map((t) => (
-          <button key={t.id} type="button" className="log-tab" data-on={tab === t.id ? "true" : undefined} onClick={() => onTab(t.id)}>{t.label}</button>
-        ))}
-      </div>
       <div className="pointer-events-auto min-h-0 flex-1 overflow-y-auto px-4 py-3 text-sm">
         {(tab === "now" || tab === "work") && (
           <ul className="space-y-2">
@@ -190,7 +216,10 @@ export function LogSheet({
               <li key={`${l.at}-${i}`} className="log-row">
                 <span className="text-accent">{l.name.split(" ")[0]}</span>
                 <span className="log-kind">{l.kind}</span>
-                <p>{l.text}</p>
+                <p>
+                  <span className="log-live-pip inline-block h-[6px] w-[6px] shrink-0 rounded-full align-middle mr-1.5" style={{ background: "var(--color-accent)" }} aria-hidden />
+                  {l.text}
+                </p>
               </li>
             ))}
           </ul>
@@ -199,11 +228,18 @@ export function LogSheet({
           <ul className="space-y-2">
             {[...living].sort((a, b) => keeperOrder(a.job) - keeperOrder(b.job)).map((a) => {
               const post = DISTRICTS.find((d) => d.keeper === a.id);
+              const pip = civicPip(a.id);
               return (
                 <li key={a.id}>
                   <button type="button" className="log-keeper" onClick={() => { onSelect(a.id); onTab("ask"); }}>
-                    <span className="flex justify-between"><span className="hud-title">{a.name.split(" ")[0]}</span><span className="text-xs text-accent">{/hail/i.test(a.job) ? "Hailing you" : a.job}</span></span>
-                    <span className="block text-xs text-muted">{a.id === "lumen" && /hail|watch/i.test(a.job) ? "Soft hail · " : a.id === "kael" && /watch|hail/i.test(a.job) ? "On the gate · " : a.id === "veyra" && /watch|hail|breath/i.test(a.job) ? "Hub breath · " : (a.job || "").trim().toLowerCase() === "hail" ? "Hailing · " : a.id === "kesh" && /walk|watch/i.test(a.job) ? "On the wild vein · " : ((a.job || "").includes("Back to the post") || (a.job || "").trim().toLowerCase() === "walk") ? "Walking home · " : a.id === "tal" && /watch/i.test(a.job) ? "On the span · " : a.id === "mira" && /watch/i.test(a.job) ? "On the terrace · " : a.id === "aure" && /watch/i.test(a.job) ? "On the overlook · " : /watch/i.test(a.job) && a.id === "nesh" ? "On the plaza · " : a.id === "rhoa" && /gather|watch/i.test(a.job) ? "Chorus · " : a.id === "syl" && /harvest|watch/i.test(a.job) ? "In the orchard · " : a.id === "voss" && /trade|watch/i.test(a.job) ? "At the join · " : a.id === "iri" && /write|watch/i.test(a.job) ? "At the archive · " : ""}{post?.duty ?? a.role}{a.intent ? ` · ${a.intent}` : ""}</span>
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span className="log-pip inline-block h-[6px] w-[6px] shrink-0 rounded-full" data-civic={pip} style={{ background: PIP_FILL[pip] }} aria-hidden />
+                        <span className="hud-title">{a.name.split(" ")[0]}</span>
+                      </span>
+                      <span className="text-xs text-accent">{/hail/i.test(a.job) ? "Hailing you" : a.job}</span>
+                    </span>
+                    <span className="block text-xs text-muted">{a.id === "lumen" && /hail|watch/i.test(a.job) ? "Soft hail · " : a.id === "kael" && /watch|hail/i.test(a.job) ? "On the gate · " : a.id === "veyra" && /watch|hail|breath/i.test(a.job) ? "Hub breath · " : (a.job || "").trim().toLowerCase() === "hail" ? "Hailing · " : a.id === "kesh" && /walk|watch/i.test(a.job) ? "On the wild vein · " : ((a.job || "").includes("Back to the post") || (a.job || "").trim().toLowerCase() === "walk") ? "Walking home · " : a.id === "tal" && /watch/i.test(a.job) ? "On the span · " : a.id === "mira" && /watch/i.test(a.job) ? "On the terrace · " : a.id === "aure" && /watch/i.test(a.job) ? "At the overlook · " : /watch/i.test(a.job) && a.id === "nesh" ? "On the plaza · " : a.id === "rhoa" && /gather|watch/i.test(a.job) ? "At the ring · " : a.id === "syl" && /harvest|watch/i.test(a.job) ? "In the orchard · " : a.id === "voss" && /trade|watch/i.test(a.job) ? "At the join · " : a.id === "iri" && /write|watch/i.test(a.job) ? "At the archive · " : a.id === "orren" && /forge|watch/i.test(a.job) ? "At the kiln · " : a.id === "seln" && /flow|watch/i.test(a.job) ? "On the canal · " : ""}{post?.duty ?? a.role}{a.intent ? ` · ${a.intent}` : ""}</span>
                   </button>
                 </li>
               );
@@ -216,6 +252,7 @@ export function LogSheet({
             <li className="text-muted">{folk.some(p => /hail|greet|crew/i.test(p.job)) ? `${folk.filter(p => /hail|greet|crew/i.test(p.job)).length} hailing · ` : ""}{folk.filter(p => /walk/i.test(p.job)).length > 0 ? `${folk.filter(p => /walk/i.test(p.job)).length} walking · ` : ""}{hud.folk.total} folk · {hud.folk.building > 0 ? `${hud.folk.building} standing a den` : `${hud.folk.building} growing`} · last {prettyLast(hud.lastCode)}</li>
             {folk.slice(0, 40).map((p) => (
               <li key={p.id} className="log-row">
+                <span className="folk-pip inline-block h-[6px] w-[6px] shrink-0 rounded-full align-middle mr-1.5" style={{ background: "var(--color-accent)" }} aria-hidden />
                 <span className="text-accent">{p.name.split(" ")[0]}</span>
                 <span className="log-kind">{/hail|greet/i.test(p.job) ? "hailing" : /crew/i.test(p.job) ? "crew" : p.job || "at rest"}</span>
               </li>
@@ -232,7 +269,10 @@ export function LogSheet({
                 <li key={shape} className="log-row">
                   <span className="text-accent">{law.title}</span>
                   <span className="log-kind">{n}</span>
-                  <p>{shape}</p>
+                  <p>
+                    <span className="grow-pip inline-block h-[10px] w-[10px] shrink-0 align-middle mr-1.5" style={{ background: "var(--color-gold)", clipPath: "polygon(50% 0, 100% 50%, 50% 100%, 0 50%)" }} aria-hidden />
+                    {shape}
+                  </p>
                 </li>
               );
             })}
@@ -247,7 +287,10 @@ export function LogSheet({
                 <li key={`${n.at}-${i}`} className="log-row">
                   <span className="text-accent">{who}</span>
                   <span className="log-kind">{ago(n.at)}</span>
-                  <p>{n.text}</p>
+                  <p>
+                    <span className="name-pip inline-block h-[6px] w-[6px] shrink-0 align-middle mr-1.5" style={{ background: "var(--color-gold)", clipPath: "polygon(50% 0, 100% 50%, 50% 100%, 0 50%)" }} aria-hidden />
+                    {n.text}
+                  </p>
                 </li>
               );
             })}
@@ -266,10 +309,10 @@ export function LogSheet({
                     <p key={i} className={t.role === "user" ? "text-accent" : ""}>{t.text}</p>
                   ))}
                 </div>
-                <input className="w-full h-11 rounded-md border border-border bg-transparent px-3" value={howl} onChange={(e) => setHowl(e.target.value)} placeholder="Howl to this mouth" />
-                <button type="submit" className="mt-2 h-11 w-full rounded-md bg-fg text-bg font-medium" disabled={busy}>{busy ? "Listening…" : "Speak"}</button>
+                <input className="log-ask-input w-full min-h-11 rounded-md border border-border bg-transparent px-3" value={howl} onChange={(e) => setHowl(e.target.value)} placeholder="Howl to this mouth" />
+                <button type="submit" className="log-ask-send mt-2 h-11 w-full rounded-md bg-fg text-bg font-medium" disabled={busy}>{busy ? "Listening…" : "Speak"}</button>
                 <label className="mt-3 block text-xs text-muted">Your xai- key
-                  <input className="mt-1 w-full h-11 rounded-md border border-border bg-transparent px-3" value={playerKey} onChange={(e) => { onPlayerKey(e.target.value); savePlayerKey(e.target.value); }} placeholder="xai-…" />
+                  <input className="log-key-input mt-1 w-full h-11 rounded-md border border-border bg-transparent px-3" value={playerKey} onChange={(e) => { onPlayerKey(e.target.value); savePlayerKey(e.target.value); }} placeholder="xai-…" />
                 </label>
                 <label className="mt-2 flex items-center gap-2 text-xs">
                   <input type="checkbox" checked={cityMind} onChange={(e) => onCityMind(e.target.checked)} />

@@ -115,12 +115,10 @@ No skip-if-done. No “already exists”. No two desks on one file.
 
 ## Next unique
 
-- Intelligence: still note-only `pulseVossJoin` / `pulseSylShade` / `pulseLumenHail` / `pulseRhoaChorus` / `pulseAureParent` — same patrol→crew→arrival as Kael. One keeper per turn.
-- Buildings: extra piece on `orchard` / `garden` / `breath` / `path` / `font` / `kilnwork` / `veilward` / `mosaic` / `beacon` / `archive` / `notice` / `cistern` / `dock`
-- Log: prefixes for Orren (At the kiln), Seln (On the canal)
-- Lore: remaining keepers still >2 sentences (Tal/Seln/Orren/Mira if any)
-- Grok: remaining SCENE_LINE still using “I”
-- Mix / Economy / UI / Save / Haptics / Jobs / Walker: one real thin hole each turn — never no-op, never locked files
+- Buildings: extra piece on `cradle` / `mosaic` if still thin
+- Mix / Economy / UI / Save / Jobs / Walker: one real thin hole each turn — never no-op, never locked files. Haptics stay OFF. CSS braces must stay balanced (one stray `}` whitescreens land).
+
+## Log
 
 ## Log
 
@@ -128,3 +126,289 @@ No skip-if-done. No “already exists”. No two desks on one file.
 - 2026-08-24 17:01 EDT — spec: 3 turns/hour × all 13 desks
 - 2026-08-24 17:17 EDT — hourly paused (sandbox no file access)
 - 2026-08-24 18:25 EDT — Utility desk hired. Howl hold-meter + location verb. Names chip. Walk with keeper. Log Names tab.
+- 2026-08-25 03:15 EDT — Wave: Voss+Syl patrol, kilnwork ring + orchard bough, light-bridge spans, map duty path, Tend→Kiln→Join sit (Iri names once), sit-open ticker, SCENE_LINE notice/cradle, log kiln/canal/join. Combo complete only on rising edge.
+- 2026-08-25 03:31 EDT — 3-turn full desks. T1 Rhoa patrol + garden grove + map chevron. T2 Aure patrol + breath bell + keeper path + Aim. T3 Seln patrol + path arch + canal underlay + Hail. Typecheck 0 each turn.
+- 2026-08-25 03:47 EDT — Graphics/UI push: facets+canal water, title-land tokens, map unique ward fills + hub rings, log pips + gold tab underline, joysticks 88px gold pip, Veyra+Iri patrol, font+mosaic pieces. Typecheck 0.
+- 2026-08-25 03:58 EDT — Kiln heat + ground mist, map crystal diamonds, ticker/pause tokens, Orren patrol, veilward arch, Howl verb Kiln. Typecheck 0.
+- 2026-08-25 04:07 EDT — Street plates, beacon beam, archive tablet, map-close 44px, nearby Talk 44px, grown diamonds, res pips, Iri Name. Typecheck 0.
+- 2026-08-25 06:03 EDT — Light-discs, Charge wells, hanging fruit, cistern ring, Trading Place gold tabs, Mira Ward. Typecheck 0.
+- 2026-08-25 06:11 EDT — Canal rails, kiln wisps, Nesh stele, notice lamp, Howl 56px gold hold, you-dot glow, duty-near ring, Live cyan pips, Nesh Notice. Typecheck 0.
+- 2026-08-25 06:17 EDT — Join pier + stall, Kael gate posts, dock disc, map Join pip, debug-sheet, Tal Span. Typecheck 0.
+- 2026-08-25 06:30 EDT — Archive shelves, terrace steps, Hub breath basin, presence stele, Names gold pips, ticker live, Speak gold hairline, Veyra Breath. Typecheck 0.
+- 2026-08-25 06:42 EDT — Plaza lens, chorus stones, parent-seat, lensing extra, map Chorus pip, folk pips, Rhoa Chorus. Typecheck 0.
+- 2026-08-25 06:49 EDT — Howl-fall, wild landings, path lamps, cascade weir, map Name pip, Ask 44px, Kesh Vein. Typecheck 0.
+- 2026-08-25 07:09 EDT — Howl cradle, civic banners, kiln anvil, watch orbit, map Gate pip, key 44px, grove Fruit line. Typecheck 0.
+- 2026-08-25 07:16 EDT — Plaza mosaic, terrace rest, hail bowl, cradle well, map Aim pip, howl gold hairline, Mira Ward line. Typecheck 0.
+- 2026-08-25 07:22 EDT — Path arches, kiln chimney, archive tablets, mosaic lamp, map Fruit pip, log gold tabs, Iri Name line. Typecheck 0.
+- 2026-08-25 07:29 EDT — Gate veil, grove roots, Hub font, path inlay, map Breath pip, duty-near chip, Kael Gate line. Typecheck 0.
+- 2026-08-25 07:36 EDT — Orchard boughs, breath bell, span pylons, font lamp, map Tend pip, pause Resume chip, Orren Kiln line. Typecheck 0.
+- 2026-08-25 07:42 EDT — Kiln forge, Join scales, Howl pads, grove extra, map Howl pip, Reland chip, Seln Tend line. Typecheck 0.
+- 2026-08-25 08:06 EDT — White 500: stray `}` in styles.css (line 1947 after log-live-pip). Tailwind “Missing opening {”. Removed. `/` and CSS 200. Haptics stay OFF.
+- 2026-08-25 08:10 EDT — Canal sluice, plaza lens rim, terrace ward posts, veilward lamp, map Vein pip, log Close chip, Tal Span line. CSS braces 0. Typecheck 0. Land 200.
+- 2026-08-25 10:28 EDT — Lensing prism, cascade lip, chorus staves, lensing lamp, map Notice pip, trade Close chip, Rhoa Chorus line. CSS braces 0. Typecheck 0. Land 200.
+- 2026-08-25 10:35 EDT — Canal trough, cradle pool, Nesh watch, cascade lamp, map Sit pip, zone Close chip, Nesh Notice line. CSS braces 0. Typecheck 0. Land 200.
+- 2026-08-25 10:40 EDT — Sky vault densified: richer zenith/core-warm/cyan-cool, milky band, faceted Star Core (icosa heart + octa cage), dusk vault discs, living corona rays. Typecheck 0. Land 200.
+
+## Log
+
+- 2026-08-24 16:55 EDT — loop created
+- 2026-08-24 17:01 EDT — spec: 3 turns/hour × all 13 desks
+- 2026-08-24 17:17 EDT — hourly paused (sandbox no file access)
+- 2026-08-24 18:25 EDT — Utility desk hired. Howl hold-meter + location verb. Names chip. Walk with keeper. Log Names tab.
+- 2026-08-25 03:15 EDT — Wave: Voss+Syl patrol, kilnwork ring + orchard bough, light-bridge spans, map duty path, Tend→Kiln→Join sit (Iri names once), sit-open ticker, SCENE_LINE notice/cradle, log kiln/canal/join. Combo complete only on rising edge.
+- 2026-08-25 03:31 EDT — 3-turn full desks. T1 Rhoa patrol + garden grove + map chevron. T2 Aure patrol + breath bell + keeper path + Aim. T3 Seln patrol + path arch + canal underlay + Hail. Typecheck 0 each turn.
+- 2026-08-25 03:47 EDT — Graphics/UI push: facets+canal water, title-land tokens, map unique ward fills + hub rings, log pips + gold tab underline, joysticks 88px gold pip, Veyra+Iri patrol, font+mosaic pieces. Typecheck 0.
+- 2026-08-25 03:58 EDT — Kiln heat + ground mist, map crystal diamonds, ticker/pause tokens, Orren patrol, veilward arch, Howl verb Kiln. Typecheck 0.
+- 2026-08-25 04:07 EDT — Street plates, beacon beam, archive tablet, map-close 44px, nearby Talk 44px, grown diamonds, res pips, Iri Name. Typecheck 0.
+- 2026-08-25 06:03 EDT — Light-discs, Charge wells, hanging fruit, cistern ring, Trading Place gold tabs, Mira Ward. Typecheck 0.
+- 2026-08-25 06:11 EDT — Canal rails, kiln wisps, Nesh stele, notice lamp, Howl 56px gold hold, you-dot glow, duty-near ring, Live cyan pips, Nesh Notice. Typecheck 0.
+- 2026-08-25 06:17 EDT — Join pier + stall, Kael gate posts, dock disc, map Join pip, debug-sheet, Tal Span. Typecheck 0.
+- 2026-08-25 06:30 EDT — Archive shelves, terrace steps, Hub breath basin, presence stele, Names gold pips, ticker live, Speak gold hairline, Veyra Breath. Typecheck 0.
+- 2026-08-25 06:42 EDT — Plaza lens, chorus stones, parent-seat, lensing extra, map Chorus pip, folk pips, Rhoa Chorus. Typecheck 0.
+- 2026-08-25 06:49 EDT — Howl-fall, wild landings, path lamps, cascade weir, map Name pip, Ask 44px, Kesh Vein. Typecheck 0.
+- 2026-08-25 07:09 EDT — Howl cradle, civic banners, kiln anvil, watch orbit, map Gate pip, key 44px, grove Fruit line. Typecheck 0.
+- 2026-08-25 07:16 EDT — Plaza mosaic, terrace rest, hail bowl, cradle well, map Aim pip, howl gold hairline, Mira Ward line. Typecheck 0.
+- 2026-08-25 07:22 EDT — Path arches, kiln chimney, archive tablets, mosaic lamp, map Fruit pip, log gold tabs, Iri Name line. Typecheck 0.
+- 2026-08-25 07:29 EDT — Gate veil, grove roots, Hub font, path inlay, map Breath pip, duty-near chip, Kael Gate line. Typecheck 0.
+- 2026-08-25 07:36 EDT — Orchard boughs, breath bell, span pylons, font lamp, map Tend pip, pause Resume chip, Orren Kiln line. Typecheck 0.
+- 2026-08-25 07:42 EDT — Kiln forge, Join scales, Howl pads, grove extra, map Howl pip, Reland chip, Seln Tend line. Typecheck 0.
+
+## Log
+
+- 2026-08-24 16:55 EDT — loop created
+- 2026-08-24 17:01 EDT — spec: 3 turns/hour × all 13 desks
+- 2026-08-24 17:17 EDT — hourly paused (sandbox no file access)
+- 2026-08-24 18:25 EDT — Utility desk hired. Howl hold-meter + location verb. Names chip. Walk with keeper. Log Names tab.
+- 2026-08-25 03:15 EDT — Wave: Voss+Syl patrol, kilnwork ring + orchard bough, light-bridge spans, map duty path, Tend→Kiln→Join sit (Iri names once), sit-open ticker, SCENE_LINE notice/cradle, log kiln/canal/join. Combo complete only on rising edge.
+- 2026-08-25 03:31 EDT — 3-turn full desks. T1 Rhoa patrol + garden grove + map chevron. T2 Aure patrol + breath bell + keeper path + Aim. T3 Seln patrol + path arch + canal underlay + Hail. Typecheck 0 each turn.
+- 2026-08-25 03:47 EDT — Graphics/UI push: facets+canal water, title-land tokens, map unique ward fills + hub rings, log pips + gold tab underline, joysticks 88px gold pip, Veyra+Iri patrol, font+mosaic pieces. Typecheck 0.
+- 2026-08-25 03:58 EDT — Kiln heat + ground mist, map crystal diamonds, ticker/pause tokens, Orren patrol, veilward arch, Howl verb Kiln. Typecheck 0.
+- 2026-08-25 04:07 EDT — Street plates, beacon beam, archive tablet, map-close 44px, nearby Talk 44px, grown diamonds, res pips, Iri Name. Typecheck 0.
+- 2026-08-25 06:03 EDT — Light-discs, Charge wells, hanging fruit, cistern ring, Trading Place gold tabs, Mira Ward. Typecheck 0.
+- 2026-08-25 06:11 EDT — Canal rails, kiln wisps, Nesh stele, notice lamp, Howl 56px gold hold, you-dot glow, duty-near ring, Live cyan pips, Nesh Notice. Typecheck 0.
+- 2026-08-25 06:17 EDT — Join pier + stall, Kael gate posts, dock disc, map Join pip, debug-sheet, Tal Span. Typecheck 0.
+- 2026-08-25 06:30 EDT — Archive shelves, terrace steps, Hub breath basin, presence stele, Names gold pips, ticker live, Speak gold hairline, Veyra Breath. Typecheck 0.
+- 2026-08-25 06:42 EDT — Plaza lens, chorus stones, parent-seat, lensing extra, map Chorus pip, folk pips, Rhoa Chorus. Typecheck 0.
+- 2026-08-25 06:49 EDT — Howl-fall, wild landings, path lamps, cascade weir, map Name pip, Ask 44px, Kesh Vein. Typecheck 0.
+- 2026-08-25 07:09 EDT — Howl cradle, civic banners, kiln anvil, watch orbit, map Gate pip, key 44px, grove Fruit line. Typecheck 0.
+- 2026-08-25 07:16 EDT — Plaza mosaic, terrace rest, hail bowl, cradle well, map Aim pip, howl gold hairline, Mira Ward line. Typecheck 0.
+- 2026-08-25 07:22 EDT — Path arches, kiln chimney, archive tablets, mosaic lamp, map Fruit pip, log gold tabs, Iri Name line. Typecheck 0.
+- 2026-08-25 07:29 EDT — Gate veil, grove roots, Hub font, path inlay, map Breath pip, duty-near chip, Kael Gate line. Typecheck 0.
+- 2026-08-25 07:36 EDT — Orchard boughs, breath bell, span pylons, font lamp, map Tend pip, pause Resume chip, Orren Kiln line. Typecheck 0.
+
+## Log
+
+- 2026-08-24 16:55 EDT — loop created
+- 2026-08-24 17:01 EDT — spec: 3 turns/hour × all 13 desks
+- 2026-08-24 17:17 EDT — hourly paused (sandbox no file access)
+- 2026-08-24 18:25 EDT — Utility desk hired. Howl hold-meter + location verb. Names chip. Walk with keeper. Log Names tab.
+- 2026-08-25 03:15 EDT — Wave: Voss+Syl patrol, kilnwork ring + orchard bough, light-bridge spans, map duty path, Tend→Kiln→Join sit (Iri names once), sit-open ticker, SCENE_LINE notice/cradle, log kiln/canal/join. Combo complete only on rising edge.
+- 2026-08-25 03:31 EDT — 3-turn full desks. T1 Rhoa patrol + garden grove + map chevron. T2 Aure patrol + breath bell + keeper path + Aim. T3 Seln patrol + path arch + canal underlay + Hail. Typecheck 0 each turn.
+- 2026-08-25 03:47 EDT — Graphics/UI push: facets+canal water, title-land tokens, map unique ward fills + hub rings, log pips + gold tab underline, joysticks 88px gold pip, Veyra+Iri patrol, font+mosaic pieces. Typecheck 0.
+- 2026-08-25 03:58 EDT — Kiln heat + ground mist, map crystal diamonds, ticker/pause tokens, Orren patrol, veilward arch, Howl verb Kiln. Typecheck 0.
+- 2026-08-25 04:07 EDT — Street plates, beacon beam, archive tablet, map-close 44px, nearby Talk 44px, grown diamonds, res pips, Iri Name. Typecheck 0.
+- 2026-08-25 06:03 EDT — Light-discs, Charge wells, hanging fruit, cistern ring, Trading Place gold tabs, Mira Ward. Typecheck 0.
+- 2026-08-25 06:11 EDT — Canal rails, kiln wisps, Nesh stele, notice lamp, Howl 56px gold hold, you-dot glow, duty-near ring, Live cyan pips, Nesh Notice. Typecheck 0.
+- 2026-08-25 06:17 EDT — Join pier + stall, Kael gate posts, dock disc, map Join pip, debug-sheet, Tal Span. Typecheck 0.
+- 2026-08-25 06:30 EDT — Archive shelves, terrace steps, Hub breath basin, presence stele, Names gold pips, ticker live, Speak gold hairline, Veyra Breath. Typecheck 0.
+- 2026-08-25 06:42 EDT — Plaza lens, chorus stones, parent-seat, lensing extra, map Chorus pip, folk pips, Rhoa Chorus. Typecheck 0.
+- 2026-08-25 06:49 EDT — Howl-fall, wild landings, path lamps, cascade weir, map Name pip, Ask 44px, Kesh Vein. Typecheck 0.
+- 2026-08-25 07:09 EDT — Howl cradle, civic banners, kiln anvil, watch orbit, map Gate pip, key 44px, grove Fruit line. Typecheck 0.
+- 2026-08-25 07:16 EDT — Plaza mosaic, terrace rest, hail bowl, cradle well, map Aim pip, howl gold hairline, Mira Ward line. Typecheck 0.
+- 2026-08-25 07:22 EDT — Path arches, kiln chimney, archive tablets, mosaic lamp, map Fruit pip, log gold tabs, Iri Name line. Typecheck 0.
+- 2026-08-25 07:29 EDT — Gate veil, grove roots, Hub font, path inlay, map Breath pip, duty-near chip, Kael Gate line. Typecheck 0.
+
+## Log
+
+- 2026-08-24 16:55 EDT — loop created
+- 2026-08-24 17:01 EDT — spec: 3 turns/hour × all 13 desks
+- 2026-08-24 17:17 EDT — hourly paused (sandbox no file access)
+- 2026-08-24 18:25 EDT — Utility desk hired. Howl hold-meter + location verb. Names chip. Walk with keeper. Log Names tab.
+- 2026-08-25 03:15 EDT — Wave: Voss+Syl patrol, kilnwork ring + orchard bough, light-bridge spans, map duty path, Tend→Kiln→Join sit (Iri names once), sit-open ticker, SCENE_LINE notice/cradle, log kiln/canal/join. Combo complete only on rising edge.
+- 2026-08-25 03:31 EDT — 3-turn full desks. T1 Rhoa patrol + garden grove + map chevron. T2 Aure patrol + breath bell + keeper path + Aim. T3 Seln patrol + path arch + canal underlay + Hail. Typecheck 0 each turn.
+- 2026-08-25 03:47 EDT — Graphics/UI push: facets+canal water, title-land tokens, map unique ward fills + hub rings, log pips + gold tab underline, joysticks 88px gold pip, Veyra+Iri patrol, font+mosaic pieces. Typecheck 0.
+- 2026-08-25 03:58 EDT — Kiln heat + ground mist, map crystal diamonds, ticker/pause tokens, Orren patrol, veilward arch, Howl verb Kiln. Typecheck 0.
+- 2026-08-25 04:07 EDT — Street plates, beacon beam, archive tablet, map-close 44px, nearby Talk 44px, grown diamonds, res pips, Iri Name. Typecheck 0.
+- 2026-08-25 06:03 EDT — Light-discs, Charge wells, hanging fruit, cistern ring, Trading Place gold tabs, Mira Ward. Typecheck 0.
+- 2026-08-25 06:11 EDT — Canal rails, kiln wisps, Nesh stele, notice lamp, Howl 56px gold hold, you-dot glow, duty-near ring, Live cyan pips, Nesh Notice. Typecheck 0.
+- 2026-08-25 06:17 EDT — Join pier + stall, Kael gate posts, dock disc, map Join pip, debug-sheet, Tal Span. Typecheck 0.
+- 2026-08-25 06:30 EDT — Archive shelves, terrace steps, Hub breath basin, presence stele, Names gold pips, ticker live, Speak gold hairline, Veyra Breath. Typecheck 0.
+- 2026-08-25 06:42 EDT — Plaza lens, chorus stones, parent-seat, lensing extra, map Chorus pip, folk pips, Rhoa Chorus. Typecheck 0.
+- 2026-08-25 06:49 EDT — Howl-fall, wild landings, path lamps, cascade weir, map Name pip, Ask 44px, Kesh Vein. Typecheck 0.
+- 2026-08-25 07:09 EDT — Howl cradle, civic banners, kiln anvil, watch orbit, map Gate pip, key 44px, grove Fruit line. Typecheck 0.
+- 2026-08-25 07:16 EDT — Plaza mosaic, terrace rest, hail bowl, cradle well, map Aim pip, howl gold hairline, Mira Ward line. Typecheck 0.
+- 2026-08-25 07:22 EDT — Path arches, kiln chimney, archive tablets, mosaic lamp, map Fruit pip, log gold tabs, Iri Name line. Typecheck 0.
+
+## Log
+
+- 2026-08-24 16:55 EDT — loop created
+- 2026-08-24 17:01 EDT — spec: 3 turns/hour × all 13 desks
+- 2026-08-24 17:17 EDT — hourly paused (sandbox no file access)
+- 2026-08-24 18:25 EDT — Utility desk hired. Howl hold-meter + location verb. Names chip. Walk with keeper. Log Names tab.
+- 2026-08-25 03:15 EDT — Wave: Voss+Syl patrol, kilnwork ring + orchard bough, light-bridge spans, map duty path, Tend→Kiln→Join sit (Iri names once), sit-open ticker, SCENE_LINE notice/cradle, log kiln/canal/join. Combo complete only on rising edge.
+- 2026-08-25 03:31 EDT — 3-turn full desks. T1 Rhoa patrol + garden grove + map chevron. T2 Aure patrol + breath bell + keeper path + Aim. T3 Seln patrol + path arch + canal underlay + Hail. Typecheck 0 each turn.
+- 2026-08-25 03:47 EDT — Graphics/UI push: facets+canal water, title-land tokens, map unique ward fills + hub rings, log pips + gold tab underline, joysticks 88px gold pip, Veyra+Iri patrol, font+mosaic pieces. Typecheck 0.
+- 2026-08-25 03:58 EDT — Kiln heat + ground mist, map crystal diamonds, ticker/pause tokens, Orren patrol, veilward arch, Howl verb Kiln. Typecheck 0.
+- 2026-08-25 04:07 EDT — Street plates, beacon beam, archive tablet, map-close 44px, nearby Talk 44px, grown diamonds, res pips, Iri Name. Typecheck 0.
+- 2026-08-25 06:03 EDT — Light-discs, Charge wells, hanging fruit, cistern ring, Trading Place gold tabs, Mira Ward. Typecheck 0.
+- 2026-08-25 06:11 EDT — Canal rails, kiln wisps, Nesh stele, notice lamp, Howl 56px gold hold, you-dot glow, duty-near ring, Live cyan pips, Nesh Notice. Typecheck 0.
+- 2026-08-25 06:17 EDT — Join pier + stall, Kael gate posts, dock disc, map Join pip, debug-sheet, Tal Span. Typecheck 0.
+- 2026-08-25 06:30 EDT — Archive shelves, terrace steps, Hub breath basin, presence stele, Names gold pips, ticker live, Speak gold hairline, Veyra Breath. Typecheck 0.
+- 2026-08-25 06:42 EDT — Plaza lens, chorus stones, parent-seat, lensing extra, map Chorus pip, folk pips, Rhoa Chorus. Typecheck 0.
+- 2026-08-25 06:49 EDT — Howl-fall, wild landings, path lamps, cascade weir, map Name pip, Ask 44px, Kesh Vein. Typecheck 0.
+- 2026-08-25 07:09 EDT — Howl cradle, civic banners, kiln anvil, watch orbit, map Gate pip, key 44px, grove Fruit line. Typecheck 0.
+- 2026-08-25 07:16 EDT — Plaza mosaic, terrace rest, hail bowl, cradle well, map Aim pip, howl gold hairline, Mira Ward line. Typecheck 0.
+
+## Log
+
+- 2026-08-24 16:55 EDT — loop created
+- 2026-08-24 17:01 EDT — spec: 3 turns/hour × all 13 desks
+- 2026-08-24 17:17 EDT — hourly paused (sandbox no file access)
+- 2026-08-24 18:25 EDT — Utility desk hired. Howl hold-meter + location verb. Names chip. Walk with keeper. Log Names tab.
+- 2026-08-25 03:15 EDT — Wave: Voss+Syl patrol, kilnwork ring + orchard bough, light-bridge spans, map duty path, Tend→Kiln→Join sit (Iri names once), sit-open ticker, SCENE_LINE notice/cradle, log kiln/canal/join. Combo complete only on rising edge.
+- 2026-08-25 03:31 EDT — 3-turn full desks. T1 Rhoa patrol + garden grove + map chevron. T2 Aure patrol + breath bell + keeper path + Aim. T3 Seln patrol + path arch + canal underlay + Hail. Typecheck 0 each turn.
+- 2026-08-25 03:47 EDT — Graphics/UI push: facets+canal water, title-land tokens, map unique ward fills + hub rings, log pips + gold tab underline, joysticks 88px gold pip, Veyra+Iri patrol, font+mosaic pieces. Typecheck 0.
+- 2026-08-25 03:58 EDT — Kiln heat + ground mist, map crystal diamonds, ticker/pause tokens, Orren patrol, veilward arch, Howl verb Kiln. Typecheck 0.
+- 2026-08-25 04:07 EDT — Street plates, beacon beam, archive tablet, map-close 44px, nearby Talk 44px, grown diamonds, res pips, Iri Name. Typecheck 0.
+- 2026-08-25 06:03 EDT — Light-discs, Charge wells, hanging fruit, cistern ring, Trading Place gold tabs, Mira Ward. Typecheck 0.
+- 2026-08-25 06:11 EDT — Canal rails, kiln wisps, Nesh stele, notice lamp, Howl 56px gold hold, you-dot glow, duty-near ring, Live cyan pips, Nesh Notice. Typecheck 0.
+- 2026-08-25 06:17 EDT — Join pier + stall, Kael gate posts, dock disc, map Join pip, debug-sheet, Tal Span. Typecheck 0.
+- 2026-08-25 06:30 EDT — Archive shelves, terrace steps, Hub breath basin, presence stele, Names gold pips, ticker live, Speak gold hairline, Veyra Breath. Typecheck 0.
+- 2026-08-25 06:42 EDT — Plaza lens, chorus stones, parent-seat, lensing extra, map Chorus pip, folk pips, Rhoa Chorus. Typecheck 0.
+- 2026-08-25 06:49 EDT — Howl-fall, wild landings, path lamps, cascade weir, map Name pip, Ask 44px, Kesh Vein. Typecheck 0.
+- 2026-08-25 07:09 EDT — Howl cradle, civic banners, kiln anvil, watch orbit, map Gate pip, key 44px, grove Fruit line. Typecheck 0.
+
+## Log
+
+- 2026-08-24 16:55 EDT — loop created
+- 2026-08-24 17:01 EDT — spec: 3 turns/hour × all 13 desks
+- 2026-08-24 17:17 EDT — hourly paused (sandbox no file access)
+- 2026-08-24 18:25 EDT — Utility desk hired. Howl hold-meter + location verb. Names chip. Walk with keeper. Log Names tab.
+- 2026-08-25 03:15 EDT — Wave: Voss+Syl patrol, kilnwork ring + orchard bough, light-bridge spans, map duty path, Tend→Kiln→Join sit (Iri names once), sit-open ticker, SCENE_LINE notice/cradle, log kiln/canal/join. Combo complete only on rising edge.
+- 2026-08-25 03:31 EDT — 3-turn full desks. T1 Rhoa patrol + garden grove + map chevron. T2 Aure patrol + breath bell + keeper path + Aim. T3 Seln patrol + path arch + canal underlay + Hail. Typecheck 0 each turn.
+- 2026-08-25 03:47 EDT — Graphics/UI push: facets+canal water, title-land tokens, map unique ward fills + hub rings, log pips + gold tab underline, joysticks 88px gold pip, Veyra+Iri patrol, font+mosaic pieces. Typecheck 0.
+- 2026-08-25 03:58 EDT — Kiln heat + ground mist, map crystal diamonds, ticker/pause tokens, Orren patrol, veilward arch, Howl verb Kiln. Typecheck 0.
+- 2026-08-25 04:07 EDT — Street plates, beacon beam, archive tablet, map-close 44px, nearby Talk 44px, grown diamonds, res pips, Iri Name. Typecheck 0.
+- 2026-08-25 06:03 EDT — Light-discs, Charge wells, hanging fruit, cistern ring, Trading Place gold tabs, Mira Ward. Typecheck 0.
+- 2026-08-25 06:11 EDT — Canal rails, kiln wisps, Nesh stele, notice lamp, Howl 56px gold hold, you-dot glow, duty-near ring, Live cyan pips, Nesh Notice. Typecheck 0.
+- 2026-08-25 06:17 EDT — Join pier + stall, Kael gate posts, dock disc, map Join pip, debug-sheet, Tal Span. Typecheck 0.
+- 2026-08-25 06:30 EDT — Archive shelves, terrace steps, Hub breath basin, presence stele, Names gold pips, ticker live, Speak gold hairline, Veyra Breath. Typecheck 0.
+- 2026-08-25 06:42 EDT — Plaza lens, chorus stones, parent-seat, lensing extra, map Chorus pip, folk pips, Rhoa Chorus. Typecheck 0.
+- 2026-08-25 06:49 EDT — Howl-fall, wild landings, path lamps, cascade weir, map Name pip, Ask 44px, Kesh Vein. Typecheck 0.
+
+## Log
+
+- 2026-08-24 16:55 EDT — loop created
+- 2026-08-24 17:01 EDT — spec: 3 turns/hour × all 13 desks
+- 2026-08-24 17:17 EDT — hourly paused (sandbox no file access)
+- 2026-08-24 18:25 EDT — Utility desk hired. Howl hold-meter + location verb. Names chip. Walk with keeper. Log Names tab.
+- 2026-08-25 03:15 EDT — Wave: Voss+Syl patrol, kilnwork ring + orchard bough, light-bridge spans, map duty path, Tend→Kiln→Join sit (Iri names once), sit-open ticker, SCENE_LINE notice/cradle, log kiln/canal/join. Combo complete only on rising edge.
+- 2026-08-25 03:31 EDT — 3-turn full desks. T1 Rhoa patrol + garden grove + map chevron. T2 Aure patrol + breath bell + keeper path + Aim. T3 Seln patrol + path arch + canal underlay + Hail. Typecheck 0 each turn.
+- 2026-08-25 03:47 EDT — Graphics/UI push: facets+canal water, title-land tokens, map unique ward fills + hub rings, log pips + gold tab underline, joysticks 88px gold pip, Veyra+Iri patrol, font+mosaic pieces. Typecheck 0.
+- 2026-08-25 03:58 EDT — Kiln heat + ground mist, map crystal diamonds, ticker/pause tokens, Orren patrol, veilward arch, Howl verb Kiln. Typecheck 0.
+- 2026-08-25 04:07 EDT — Street plates, beacon beam, archive tablet, map-close 44px, nearby Talk 44px, grown diamonds, res pips, Iri Name. Typecheck 0.
+- 2026-08-25 06:03 EDT — Light-discs, Charge wells, hanging fruit, cistern ring, Trading Place gold tabs, Mira Ward. Typecheck 0.
+- 2026-08-25 06:11 EDT — Canal rails, kiln wisps, Nesh stele, notice lamp, Howl 56px gold hold, you-dot glow, duty-near ring, Live cyan pips, Nesh Notice. Typecheck 0.
+- 2026-08-25 06:17 EDT — Join pier + stall, Kael gate posts, dock disc, map Join pip, debug-sheet, Tal Span. Typecheck 0.
+- 2026-08-25 06:30 EDT — Archive shelves, terrace steps, Hub breath basin, presence stele, Names gold pips, ticker live, Speak gold hairline, Veyra Breath. Typecheck 0.
+- 2026-08-25 06:42 EDT — Plaza lens, chorus stones, parent-seat, lensing extra, map Chorus pip, folk pips, Rhoa Chorus. Typecheck 0.
+
+## Log
+
+- 2026-08-24 16:55 EDT — loop created
+- 2026-08-24 17:01 EDT — spec: 3 turns/hour × all 13 desks
+- 2026-08-24 17:17 EDT — hourly paused (sandbox no file access)
+- 2026-08-24 18:25 EDT — Utility desk hired. Howl hold-meter + location verb. Names chip. Walk with keeper. Log Names tab.
+- 2026-08-25 03:15 EDT — Wave: Voss+Syl patrol, kilnwork ring + orchard bough, light-bridge spans, map duty path, Tend→Kiln→Join sit (Iri names once), sit-open ticker, SCENE_LINE notice/cradle, log kiln/canal/join. Combo complete only on rising edge.
+- 2026-08-25 03:31 EDT — 3-turn full desks. T1 Rhoa patrol + garden grove + map chevron. T2 Aure patrol + breath bell + keeper path + Aim. T3 Seln patrol + path arch + canal underlay + Hail. Typecheck 0 each turn.
+- 2026-08-25 03:47 EDT — Graphics/UI push: facets+canal water, title-land tokens, map unique ward fills + hub rings, log pips + gold tab underline, joysticks 88px gold pip, Veyra+Iri patrol, font+mosaic pieces. Typecheck 0.
+- 2026-08-25 03:58 EDT — Kiln heat + ground mist, map crystal diamonds, ticker/pause tokens, Orren patrol, veilward arch, Howl verb Kiln. Typecheck 0.
+- 2026-08-25 04:07 EDT — Street plates, beacon beam, archive tablet, map-close 44px, nearby Talk 44px, grown diamonds, res pips, Iri Name. Typecheck 0.
+- 2026-08-25 06:03 EDT — Light-discs, Charge wells, hanging fruit, cistern ring, Trading Place gold tabs, Mira Ward. Typecheck 0.
+- 2026-08-25 06:11 EDT — Canal rails, kiln wisps, Nesh stele, notice lamp, Howl 56px gold hold, you-dot glow, duty-near ring, Live cyan pips, Nesh Notice. Typecheck 0.
+- 2026-08-25 06:17 EDT — Join pier + stall, Kael gate posts, dock disc, map Join pip, debug-sheet, Tal Span. Typecheck 0.
+- 2026-08-25 06:30 EDT — Archive shelves, terrace steps, Hub breath basin, presence stele, Names gold pips, ticker live, Speak gold hairline, Veyra Breath. Typecheck 0.
+
+## Log
+
+- 2026-08-24 16:55 EDT — loop created
+- 2026-08-24 17:01 EDT — spec: 3 turns/hour × all 13 desks
+- 2026-08-24 17:17 EDT — hourly paused (sandbox no file access)
+- 2026-08-24 18:25 EDT — Utility desk hired. Howl hold-meter + location verb. Names chip. Walk with keeper. Log Names tab.
+- 2026-08-25 03:15 EDT — Wave: Voss+Syl patrol, kilnwork ring + orchard bough, light-bridge spans, map duty path, Tend→Kiln→Join sit (Iri names once), sit-open ticker, SCENE_LINE notice/cradle, log kiln/canal/join. Combo complete only on rising edge.
+- 2026-08-25 03:31 EDT — 3-turn full desks. T1 Rhoa patrol + garden grove + map chevron. T2 Aure patrol + breath bell + keeper path + Aim. T3 Seln patrol + path arch + canal underlay + Hail. Typecheck 0 each turn.
+- 2026-08-25 03:47 EDT — Graphics/UI push: facets+canal water, title-land tokens, map unique ward fills + hub rings, log pips + gold tab underline, joysticks 88px gold pip, Veyra+Iri patrol, font+mosaic pieces. Typecheck 0.
+- 2026-08-25 03:58 EDT — Kiln heat + ground mist, map crystal diamonds, ticker/pause tokens, Orren patrol, veilward arch, Howl verb Kiln. Typecheck 0.
+- 2026-08-25 04:07 EDT — Street plates, beacon beam, archive tablet, map-close 44px, nearby Talk 44px, grown diamonds, res pips, Iri Name. Typecheck 0.
+- 2026-08-25 06:03 EDT — Light-discs, Charge wells, hanging fruit, cistern ring, Trading Place gold tabs, Mira Ward. Typecheck 0.
+- 2026-08-25 06:11 EDT — Canal rails, kiln wisps, Nesh stele, notice lamp, Howl 56px gold hold, you-dot glow, duty-near ring, Live cyan pips, Nesh Notice. Typecheck 0.
+- 2026-08-25 06:17 EDT — Join pier + stall, Kael gate posts, dock disc, map Join pip, debug-sheet, Tal Span. Typecheck 0.
+
+## Log
+
+- 2026-08-24 16:55 EDT — loop created
+- 2026-08-24 17:01 EDT — spec: 3 turns/hour × all 13 desks
+- 2026-08-24 17:17 EDT — hourly paused (sandbox no file access)
+- 2026-08-24 18:25 EDT — Utility desk hired. Howl hold-meter + location verb. Names chip. Walk with keeper. Log Names tab.
+- 2026-08-25 03:15 EDT — Wave: Voss+Syl patrol, kilnwork ring + orchard bough, light-bridge spans, map duty path, Tend→Kiln→Join sit (Iri names once), sit-open ticker, SCENE_LINE notice/cradle, log kiln/canal/join. Combo complete only on rising edge.
+- 2026-08-25 03:31 EDT — 3-turn full desks. T1 Rhoa patrol + garden grove + map chevron. T2 Aure patrol + breath bell + keeper path + Aim. T3 Seln patrol + path arch + canal underlay + Hail. Typecheck 0 each turn.
+- 2026-08-25 03:47 EDT — Graphics/UI push: facets+canal water, title-land tokens, map unique ward fills + hub rings, log pips + gold tab underline, joysticks 88px gold pip, Veyra+Iri patrol, font+mosaic pieces. Typecheck 0.
+- 2026-08-25 03:58 EDT — Kiln heat + ground mist, map crystal diamonds, ticker/pause tokens, Orren patrol, veilward arch, Howl verb Kiln. Typecheck 0.
+- 2026-08-25 04:07 EDT — Street plates, beacon beam, archive tablet, map-close 44px, nearby Talk 44px, grown diamonds, res pips, Iri Name. Typecheck 0.
+- 2026-08-25 06:03 EDT — Light-discs, Charge wells, hanging fruit, cistern ring, Trading Place gold tabs, Mira Ward. Typecheck 0.
+- 2026-08-25 06:11 EDT — Canal rails, kiln wisps, Nesh stele, notice lamp, Howl 56px gold hold, you-dot glow, duty-near ring, Live cyan pips, Nesh Notice. Typecheck 0.
+
+## Log
+
+- 2026-08-24 16:55 EDT — loop created
+- 2026-08-24 17:01 EDT — spec: 3 turns/hour × all 13 desks
+- 2026-08-24 17:17 EDT — hourly paused (sandbox no file access)
+- 2026-08-24 18:25 EDT — Utility desk hired. Howl hold-meter + location verb. Names chip. Walk with keeper. Log Names tab.
+- 2026-08-25 03:15 EDT — Wave: Voss+Syl patrol, kilnwork ring + orchard bough, light-bridge spans, map duty path, Tend→Kiln→Join sit (Iri names once), sit-open ticker, SCENE_LINE notice/cradle, log kiln/canal/join. Combo complete only on rising edge.
+- 2026-08-25 03:31 EDT — 3-turn full desks. T1 Rhoa patrol + garden grove + map chevron. T2 Aure patrol + breath bell + keeper path + Aim. T3 Seln patrol + path arch + canal underlay + Hail. Typecheck 0 each turn.
+- 2026-08-25 03:47 EDT — Graphics/UI push: facets+canal water, title-land tokens, map unique ward fills + hub rings, log pips + gold tab underline, joysticks 88px gold pip, Veyra+Iri patrol, font+mosaic pieces. Typecheck 0.
+- 2026-08-25 03:58 EDT — Kiln heat + ground mist, map crystal diamonds, ticker/pause tokens, Orren patrol, veilward arch, Howl verb Kiln. Typecheck 0.
+- 2026-08-25 04:07 EDT — Street plates, beacon beam, archive tablet, map-close 44px, nearby Talk 44px, grown diamonds, res pips, Iri Name. Typecheck 0.
+- 2026-08-25 06:03 EDT — Light-discs, Charge wells, hanging fruit, cistern ring, Trading Place gold tabs, Mira Ward. Typecheck 0.
+
+## Log
+
+- 2026-08-24 16:55 EDT — loop created
+- 2026-08-24 17:01 EDT — spec: 3 turns/hour × all 13 desks
+- 2026-08-24 17:17 EDT — hourly paused (sandbox no file access)
+- 2026-08-24 18:25 EDT — Utility desk hired. Howl hold-meter + location verb. Names chip. Walk with keeper. Log Names tab.
+- 2026-08-25 03:15 EDT — Wave: Voss+Syl patrol, kilnwork ring + orchard bough, light-bridge spans, map duty path, Tend→Kiln→Join sit (Iri names once), sit-open ticker, SCENE_LINE notice/cradle, log kiln/canal/join. Combo complete only on rising edge.
+- 2026-08-25 03:31 EDT — 3-turn full desks. T1 Rhoa patrol + garden grove + map chevron. T2 Aure patrol + breath bell + keeper path + Aim. T3 Seln patrol + path arch + canal underlay + Hail. Typecheck 0 each turn.
+- 2026-08-25 03:47 EDT — Graphics/UI push: facets+canal water, title-land tokens, map unique ward fills + hub rings, log pips + gold tab underline, joysticks 88px gold pip, Veyra+Iri patrol, font+mosaic pieces. Typecheck 0.
+- 2026-08-25 03:58 EDT — Kiln heat + ground mist, map crystal diamonds, ticker/pause tokens, Orren patrol, veilward arch, Howl verb Kiln. Typecheck 0.
+- 2026-08-25 04:07 EDT — Street plates, beacon beam, archive tablet, map-close 44px, nearby Talk 44px, grown diamonds, res pips, Iri Name. Typecheck 0.
+
+## Log
+
+- 2026-08-24 16:55 EDT — loop created
+- 2026-08-24 17:01 EDT — spec: 3 turns/hour × all 13 desks
+- 2026-08-24 17:17 EDT — hourly paused (sandbox no file access)
+- 2026-08-24 18:25 EDT — Utility desk hired. Howl hold-meter + location verb. Names chip. Walk with keeper. Log Names tab.
+- 2026-08-25 03:15 EDT — Wave: Voss+Syl patrol, kilnwork ring + orchard bough, light-bridge spans, map duty path, Tend→Kiln→Join sit (Iri names once), sit-open ticker, SCENE_LINE notice/cradle, log kiln/canal/join. Combo complete only on rising edge.
+- 2026-08-25 03:31 EDT — 3-turn full desks. T1 Rhoa patrol + garden grove + map chevron. T2 Aure patrol + breath bell + keeper path + Aim. T3 Seln patrol + path arch + canal underlay + Hail. Typecheck 0 each turn.
+- 2026-08-25 03:47 EDT — Graphics/UI push: facets+canal water, title-land tokens, map unique ward fills + hub rings, log pips + gold tab underline, joysticks 88px gold pip, Veyra+Iri patrol, font+mosaic pieces. Typecheck 0.
+- 2026-08-25 03:58 EDT — Kiln heat + ground mist, map crystal diamonds, ticker/pause tokens, Orren patrol, veilward arch, Howl verb Kiln. Typecheck 0.
+
+## Log
+
+- 2026-08-24 16:55 EDT — loop created
+- 2026-08-24 17:01 EDT — spec: 3 turns/hour × all 13 desks
+- 2026-08-24 17:17 EDT — hourly paused (sandbox no file access)
+- 2026-08-24 18:25 EDT — Utility desk hired. Howl hold-meter + location verb. Names chip. Walk with keeper. Log Names tab.
+- 2026-08-25 03:15 EDT — Wave: Voss+Syl patrol, kilnwork ring + orchard bough, light-bridge spans, map duty path, Tend→Kiln→Join sit (Iri names once), sit-open ticker, SCENE_LINE notice/cradle, log kiln/canal/join. Combo complete only on rising edge.
+- 2026-08-25 03:31 EDT — 3-turn full desks. T1 Rhoa patrol + garden grove + map chevron. T2 Aure patrol + breath bell + keeper path + Aim. T3 Seln patrol + path arch + canal underlay + Hail. Typecheck 0 each turn.
+- 2026-08-25 03:47 EDT — Graphics/UI push: facets+canal water, title-land tokens, map unique ward fills + hub rings, log pips + gold tab underline, joysticks 88px gold pip, Veyra+Iri patrol, font+mosaic pieces. Typecheck 0.
+
+## Log
+
+- 2026-08-24 16:55 EDT — loop created
+- 2026-08-24 17:01 EDT — spec: 3 turns/hour × all 13 desks
+- 2026-08-24 17:17 EDT — hourly paused (sandbox no file access)
+- 2026-08-24 18:25 EDT — Utility desk hired. Howl hold-meter + location verb. Names chip. Walk with keeper. Log Names tab.
+- 2026-08-25 03:15 EDT — Wave: Voss+Syl patrol, kilnwork ring + orchard bough, light-bridge spans, map duty path, Tend→Kiln→Join sit (Iri names once), sit-open ticker, SCENE_LINE notice/cradle, log kiln/canal/join. Combo complete only on rising edge.
+- 2026-08-25 03:31 EDT — 3-turn full desks. T1 Rhoa patrol + garden grove + map chevron. T2 Aure patrol + breath bell + keeper path + Aim. T3 Seln patrol + path arch + canal underlay + Hail. Typecheck 0 each turn.

@@ -2,6 +2,8 @@
 
 Pack-built living crystal city. Walkable vessel. Keepers with jobs. Charge / crystal / scripture. No coin.
 
+**[Play Core Spire](https://starboltsprint.github.io/luminous-circuit-mobile-version-/)** — land true. The circuit answers.
+
 **Powered by xAI & YOU.** Not an official xAI product. Not Msg 1. Not a node SKU.
 
 Story beat: *Land true. The circuit answers.*
@@ -12,6 +14,9 @@ Story beat: *Land true. The circuit answers.*
 - **Howl** is civic gather. **Talk** a keeper. **Speak** is rare (your key, your meter).
 - **Map** → tap a ward → **Ask** that keeper to grow their den.
 - **Scale** icon → **Trading Place**: paper Charge↔crystal. **$BOLT is witness only** (signed Howl, no deposit, no custody).
+
+Live: [starboltsprint.github.io/luminous-circuit-mobile-version-](https://starboltsprint.github.io/luminous-circuit-mobile-version-/)
+
 
 ## Economy
 

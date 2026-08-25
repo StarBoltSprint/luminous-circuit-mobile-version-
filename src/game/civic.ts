@@ -1,6 +1,7 @@
 /** Civic utility — briefs, location Howl, scripture names. Never coin, never custody. */
 import { composeScene, defaultScene, type BuildPiece, type SceneKind } from "./build-spec";
 import { DISTRICTS, HUB, LORE } from "./lore";
+import { howlMult, type HowlGrade } from "./play";
 import {
   addCharge,
   HOWL_YIELD,
@@ -38,7 +39,17 @@ export type HowlResult = {
 
 export type HowlName = { at: number; keeper: string; text: string };
 
+export type CivicStock = {
+  charge: number;
+  crystal: number;
+  scripture: number;
+  bids: number;
+};
+
 const NAMES_KEY = "lc-scripture-names";
+
+/** Tend canal → kiln → join → name. Hub is the listening fallback, not a loop. */
+const DUTY_CHAIN = ["seln", "orren", "voss", "iri"] as const;
 
 const ASK: Record<string, Omit<CivicAsk, "keeper">> = {
   veyra: { label: "Ask Veyra to steady the breath", hint: "Hub listens. A new ring or font." },
@@ -88,29 +99,95 @@ export function civicForZone(zone: string | null): CivicAsk | null {
   return null;
 }
 
+function doLine(keeper: string): string {
+  if (keeper === "syl") return "Hold Howl, then fruit the grove — Fruit.";
+  if (keeper === "mira") return "Hold Howl, then rest the terrace — Ward.";
+  if (keeper === "iri") return "Hold Howl, then name the tablet — Name.";
+  if (keeper === "kael") return "Hold Howl, then keep the gate soft — Gate.";
+  if (keeper === "orren") return "Hold Howl, then kiln what Charge wanted — Kiln.";
+  if (keeper === "seln") return "Hold Howl, then tend the current — Tend.";
+  if (keeper === "voss") return "Hold Howl, then join what Charge wanted — Join.";
+  if (keeper === "tal") return "Hold Howl, then span what Charge wanted — Span.";
+  if (keeper === "rhoa") return "Hold Howl, then chorus at the ring — Chorus.";
+  if (keeper === "nesh") return "Hold Howl, then notice what the plaza saw — Notice.";
+  return `Hold Howl, then let go on the gold — ${howlVerb(keeper)}.`;
+}
+
 function briefOf(keeper: string, line: string, zoneLabel: string | null, join?: boolean): CivicBrief {
   const meta = WALK[keeper] ?? { walk: "Hub", zoneId: null };
   const here =
     keeper === "veyra" || keeper === "nesh" || keeper === "rhoa"
       ? !zoneLabel || zoneLabel === HUB.title || /spire|hub|ring/i.test(zoneLabel)
       : civicForZone(zoneLabel)?.keeper === keeper;
-  return { id: keeper, line, walk: meta.walk, keeper, zoneId: meta.zoneId, here, join };
+  return { id: keeper, line: here ? doLine(keeper) : line, walk: meta.walk, keeper, zoneId: meta.zoneId, here, join };
+}
+
+function stockOf(stock: CivicStock | null | undefined) {
+  return {
+    charge: Number(stock?.charge) || 0,
+    crystal: Number(stock?.crystal) || 0,
+    bids: Number(stock?.bids) || 0,
+    scripture: Number(stock?.scripture) || 0,
+  };
+}
+
+function needLive(keeper: string, s: ReturnType<typeof stockOf>): boolean {
+  if (keeper === "seln") return s.charge < 4;
+  if (keeper === "orren") return s.crystal < 3;
+  if (keeper === "voss") return s.bids >= 3 || (s.charge >= 2 && s.crystal >= 1 && s.bids > 0);
+  if (keeper === "iri") return s.scripture < 1;
+  return false;
+}
+
+function needLine(keeper: string, s: ReturnType<typeof stockOf>): { line: string; join?: boolean } {
+  if (keeper === "seln") {
+    return { line: s.charge < 4 ? "Canal thin. Walk Canals. Howl — Seln tends." : "Walk Canals. Howl — Seln tends." };
+  }
+  if (keeper === "orren") {
+    return { line: s.crystal < 3 ? "Kiln hungry. Walk Foundry. Howl — Orren grows body." : "Walk Foundry. Howl — Orren grows body." };
+  }
+  if (keeper === "voss") {
+    if (s.bids >= 3) return { line: "Join busy. Walk Join. Howl — paper fill, no coin.", join: true };
+    if (s.bids > 0) return { line: "Bids at the Join. Walk Join. Howl.", join: true };
+    return { line: "Walk Join. Howl — paper fill, no coin.", join: true };
+  }
+  if (keeper === "iri") {
+    return { line: s.scripture < 1 ? "Iri quiet. Walk Archive. Howl — a name in residual light." : "Walk Archive. Howl — a name in residual light." };
+  }
+  return { line: "Hub listens. Walk Core Spire. Howl — civic gather." };
+}
+
+function pickNeed(s: ReturnType<typeof stockOf>): { keeper: string; line: string; join?: boolean } {
+  if (needLive("seln", s)) return { keeper: "seln", ...needLine("seln", s) };
+  if (needLive("orren", s)) return { keeper: "orren", ...needLine("orren", s) };
+  if (needLive("voss", s)) return { keeper: "voss", ...needLine("voss", s) };
+  if (needLive("iri", s)) return { keeper: "iri", ...needLine("iri", s) };
+  return { keeper: "veyra", ...needLine("veyra", s) };
 }
 
 export function civicBrief(
   stock: { charge: number; crystal: number; scripture: number; bids: number },
   zoneLabel: string | null,
 ): CivicBrief {
-  const charge = Number(stock?.charge) || 0;
-  const crystal = Number(stock?.crystal) || 0;
-  const bids = Number(stock?.bids) || 0;
-  const scripture = Number(stock?.scripture) || 0;
-  if (charge < 4) return briefOf("seln", "Canal thin. Walk Canals. Howl — Seln tends.", zoneLabel);
-  if (crystal < 3) return briefOf("orren", "Kiln hungry. Walk Foundry. Howl — Orren grows body.", zoneLabel);
-  if (bids >= 3) return briefOf("voss", "Join busy. Walk Join. Howl — paper fill, no coin.", zoneLabel, true);
-  if (charge >= 2 && crystal >= 1 && bids > 0) return briefOf("voss", "Bids at the Join. Walk Join. Howl.", zoneLabel, true);
-  if (scripture < 1) return briefOf("iri", "Iri quiet. Walk Archive. Howl — a name in residual light.", zoneLabel);
-  return briefOf("veyra", "Hub listens. Walk Core Spire. Howl — civic gather.", zoneLabel);
+  const s = stockOf(stock);
+  const row = pickNeed(s);
+  return briefOf(row.keeper, row.line, zoneLabel, row.join);
+}
+
+/** After a successful howl, send the player to a DIFFERENT post. Canal → kiln → join → name. */
+export function civicNext(
+  stock: { charge: number; crystal: number; scripture: number; bids: number },
+  justDidKeeper: string,
+): CivicBrief {
+  const s = stockOf(stock);
+  const did = (justDidKeeper || "").toLowerCase();
+  const i = DUTY_CHAIN.indexOf(did as (typeof DUTY_CHAIN)[number]);
+  const order =
+    i >= 0 ? [...DUTY_CHAIN.slice(i + 1), ...DUTY_CHAIN.slice(0, i)] : [...DUTY_CHAIN];
+  const pick = order.find((k) => needLive(k, s)) ?? order[0] ?? "seln";
+  const row = needLine(pick, s);
+  const brief = briefOf(pick, row.line, null, row.join);
+  return { ...brief, here: false, line: row.line };
 }
 
 export function loadNames(): HowlName[] {
@@ -139,12 +216,70 @@ export function howlVerb(keeper: string | null): string {
   if (keeper === "voss") return "Join";
   if (keeper === "iri") return "Name";
   if (keeper === "syl") return "Fruit";
-  if (keeper === "mira") return "Rest";
+  if (keeper === "mira") return "Ward";
   if (keeper === "kael") return "Gate";
+  if (keeper === "aure") return "Aim";
+  if (keeper === "lumen") return "Hail";
+  if (keeper === "nesh") return "Notice";
+  if (keeper === "tal") return "Span";
+  if (keeper === "veyra") return "Breath";
+  if (keeper === "rhoa") return "Chorus";
+  if (keeper === "kesh") return "Vein";
   return "Howl";
 }
 
-export function resolveHowl(keeper: string | null, ledger: Ledger): HowlResult {
+function gradeOf(grade?: HowlGrade): HowlGrade {
+  if (grade === "thin" || grade === "held" || grade === "true") return grade;
+  return "true";
+}
+
+function firstVisit(keeper: string | null): boolean {
+  if (!keeper) return true;
+  try {
+    return !loadNames().some((n) => n.keeper === keeper);
+  } catch {
+    return true;
+  }
+}
+
+function clampStock(n: number) {
+  const v = Number.isFinite(n) ? n : 0;
+  return Math.max(0, Math.min(99, v));
+}
+
+/** Scale positive Charge/crystal/scripture gains. Costs stay. Thin still leaves a little. */
+function scaleGains(
+  ledger: Ledger,
+  before: { charge: number; crystal: number; scripture: number },
+  m: number,
+) {
+  if (m === 1) return;
+  const bump = (now: number, prev: number) => {
+    const d = now - prev;
+    if (d <= 0) return now;
+    let s = Math.round(d * m);
+    if (m < 1) s = Math.max(1, s);
+    if (m > 1 && s <= d) s = d + 1;
+    return clampStock(prev + s);
+  };
+  ledger.charge = bump(ledger.charge, before.charge);
+  ledger.crystal = bump(ledger.crystal, before.crystal);
+  ledger.scripture = bump(ledger.scripture, before.scripture);
+}
+
+function tagGrade(toast: string, grade?: HowlGrade): string {
+  if (!grade) return toast;
+  if (grade === "held") return `${toast} Held.`;
+  if (grade === "thin") return `${toast} Thin.`;
+  return `${toast} True.`;
+}
+
+export function resolveHowl(keeper: string | null, ledger: Ledger, grade?: HowlGrade): HowlResult {
+  const g = gradeOf(grade);
+  const m = howlMult(g);
+  const first = firstVisit(keeper);
+  const skipKiln = g === "thin" && !first;
+  const before = { charge: ledger.charge, crystal: ledger.crystal, scripture: ledger.scripture };
   let out: HowlResult;
   if (!keeper || keeper === "veyra" || keeper === "rhoa" || keeper === "nesh") {
     addCharge(ledger, HOWL_YIELD);
@@ -153,10 +288,19 @@ export function resolveHowl(keeper: string | null, ledger: Ledger): HowlResult {
     tryFlow(ledger);
     out = { toast: "Seln: leftover Howl learned the banks.", gather: false, resonance: 5 };
   } else if (keeper === "orren") {
-    const y = tryForge(ledger);
-    out = y
-      ? { toast: `Orren: Charge became ${y} crystal. Not chrome.`, gather: false, resonance: 5 }
-      : { toast: "Orren: kiln waits on Charge. Tend the canal first.", gather: false, resonance: 2 };
+    if (skipKiln) {
+      out = { toast: "Orren: kiln felt a thin howl. Hold through the gold.", gather: false, resonance: 2 };
+    } else {
+      const y = tryForge(ledger);
+      out = y
+        ? { toast: `Orren: Charge became ${y} crystal. Not chrome.`, gather: false, resonance: 5 }
+        : first
+          ? { toast: "Orren: first fire is small. Canal leftover still counts.", gather: false, resonance: 3 }
+          : { toast: "Orren: kiln waits on Charge. Tend the canal first.", gather: false, resonance: 2 };
+      if (!y && first) {
+        ledger.crystal = clampStock(ledger.crystal + 1);
+      }
+    }
   } else if (keeper === "voss") {
     const ok = tryTrade(ledger);
     out = {
@@ -192,6 +336,14 @@ export function resolveHowl(keeper: string | null, ledger: Ledger): HowlResult {
     addCharge(ledger, 1);
     out = { toast: "A howl without a den. Walk a ward.", gather: false, resonance: 2 };
   }
+  scaleGains(ledger, before, m);
+  if (keeper === "orren" && !skipKiln) {
+    const gained = ledger.crystal - before.crystal;
+    if (gained > 0) {
+      out = { ...out, toast: `Orren: Charge became ${gained} crystal. Not chrome.` };
+    }
+  }
+  out = { ...out, toast: tagGrade(out.toast, grade) };
   rememberHowl(keeper || "circuit", out.toast);
   return out;
 }

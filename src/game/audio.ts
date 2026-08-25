@@ -176,6 +176,11 @@ export function createAudio(): AudioBus {
         } catch {
           /* Samsung — overtone optional, howl still sounds */
         }
+        try {
+          voice(c, { freq: 176, dur: 0.42, type: "sine", gain: 0.007, attack: 0.06, delay: 0.32 });
+        } catch {
+          /* Samsung — overtone optional, howl still sounds */
+        }
       });
       buzz("howl");
     },
@@ -198,6 +203,11 @@ export function createAudio(): AudioBus {
         } catch {
           /* Samsung — overtone optional, chime still sounds */
         }
+        try {
+          voice(c, { freq: 349, dur: 0.2, type: "sine", gain: 0.006, attack: 0.02, delay: 0.08 });
+        } catch {
+          /* Samsung — overtone optional, chime still sounds */
+        }
       });
       buzz("talk");
     },
@@ -213,6 +223,11 @@ export function createAudio(): AudioBus {
         }
         try {
           voice(c, { freq: 392, dur: 0.22, type: "sine", gain: 0.01, attack: 0.02, delay: 0.22 });
+        } catch {
+          /* Samsung — overtone optional, fifth still lands */
+        }
+        try {
+          voice(c, { freq: 440, dur: 0.24, type: "sine", gain: 0.008, attack: 0.02, delay: 0.12 });
         } catch {
           /* Samsung — overtone optional, fifth still lands */
         }
@@ -265,6 +280,11 @@ export function createAudio(): AudioBus {
         }
         try {
           voice(c, { freq: 110, dur: 0.4, type: "sine", gain: 0.007, attack: 0.06, delay: 0.14 });
+        } catch {
+          /* Samsung — overtone optional, kiln still sounds */
+        }
+        try {
+          voice(c, { freq: 196, dur: 0.38, type: "sine", gain: 0.006, attack: 0.05, delay: 0.52 });
         } catch {
           /* Samsung — overtone optional, kiln still sounds */
         }

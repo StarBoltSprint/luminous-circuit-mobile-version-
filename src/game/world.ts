@@ -16,6 +16,67 @@ import {
   type PlanStep,
 } from "./living";
 import { emptyPouch, CITY_CAP } from "./society";
+import { growWilds } from "./wilds";
+import { growAtmos } from "./atmos";
+import { growGrounds } from "./grounds";
+import { growPulse } from "./pulse";
+import { growSpans } from "./spans";
+import { growFacets } from "./facets";
+import { growWater } from "./water";
+import { growHeat } from "./heat";
+import { growMist } from "./mist";
+import { growTrails } from "./trails";
+import { growBeam } from "./beam";
+import { growDiscs } from "./discs";
+import { growCisterns } from "./cisterns";
+import { growFruit } from "./fruit";
+import { growRails } from "./rails";
+import { growSmoke } from "./smoke";
+import { growNotice } from "./notice";
+import { growPier } from "./pier";
+import { growGates } from "./gates";
+import { growStall } from "./stall";
+import { growShelves } from "./shelves";
+import { growSteps } from "./steps";
+import { growFountain } from "./fountain";
+import { growLens } from "./lens";
+import { growChorus } from "./chorus";
+import { growSeat } from "./seat";
+import { growCascade } from "./cascade";
+import { growVeins } from "./veins";
+import { growLamps } from "./lamps";
+import { growCradle } from "./cradle";
+import { growBanners } from "./banners";
+import { growAnvil } from "./anvil";
+import { growMosaic } from "./mosaic";
+import { growRest } from "./rest";
+import { growHail } from "./hail";
+import { growArches } from "./arches";
+import { growChimney } from "./chimney";
+import { growTablets } from "./tablets";
+import { growVeil } from "./veil";
+import { growRoots } from "./roots";
+import { growFont } from "./font";
+import { growBoughs } from "./boughs";
+import { growBells } from "./bells";
+import { growPylons } from "./pylons";
+import { growForge } from "./forge";
+import { growScales } from "./scales";
+import { growPads } from "./pads";
+import { growHearth } from "./hearth";
+import { growLintel } from "./lintel";
+import { growLedger } from "./ledger";
+import { growSluice } from "./sluice";
+import { growRims } from "./rims";
+import { growPosts } from "./posts";
+import { growPrism } from "./prism";
+import { growLip } from "./lip";
+import { growStaves } from "./staves";
+import { growTrough } from "./trough";
+import { growPool } from "./pool";
+import { growWatch } from "./watch";
+import { growCorona } from "./corona";
+import { growVault } from "./vault";
 
 const {
   Group, Vector2, LatheGeometry, BoxGeometry, CylinderGeometry, ConeGeometry,
@@ -125,6 +186,22 @@ export function buildWorld(): CircuitWorld {
 	const hailTex = loadMap(loader, `${TEX}/beacon-hail.jpg`, 2);
 	const clocks = [];
 	const later = [];
+	let pulseTick = null;
+	let waterTick = null;
+	let heatTick = null;
+	let beamTick = null;
+	let discTick = null;
+	let smokeTick = null;
+	let fountainTick = null;
+	let cascadeTick = null;
+	let bannerTick = null;
+	let hailTick = null;
+	let chimneyTick = null;
+	let veilTick = null;
+	let bellTick = null;
+	let forgeTick = null;
+	let poolTick = null;
+	let coronaTick = null;
 	function laterOn(fn) {
 		later.push(fn);
 	}
@@ -1410,6 +1487,69 @@ export function buildWorld(): CircuitWorld {
 	laterOn(() => stamp(geoNeedle, matCyan, 720, 1400, Math.ceil(30), 18, 40, 73, 5, 8));
 	laterOn(() => stamp(geoDen, matGold, 900, 1680, Math.ceil(28), 7, 12, 81, 5.5, 9));
 	laterOn(() => stamp(geoNeedle, matViolet, 1100, 1900, Math.ceil(18), 16, 34, 97, 4.5, 7));
+	laterOn(() => {
+		try { growWilds(group, coarse); } catch { /* samsung */ }
+		try { growAtmos(group, coarse); } catch { /* samsung */ }
+		try { growGrounds(group, coarse); } catch { /* samsung */ }
+		try { pulseTick = growPulse(group, coarse).tick; } catch { /* samsung */ }
+		try { growSpans(group, coarse); } catch { /* samsung */ }
+		try { growFacets(group, coarse); } catch { /* samsung */ }
+		try { waterTick = growWater(group, coarse).tick; } catch { /* samsung */ }
+		try { heatTick = growHeat(group, coarse).tick; } catch { /* samsung */ }
+		try { growMist(group, coarse); } catch { /* samsung */ }
+		try { growTrails(group, coarse); } catch { /* samsung */ }
+		try { beamTick = growBeam(group, coarse).tick; } catch { /* samsung */ }
+		try { discTick = growDiscs(group, coarse).tick; } catch { /* samsung */ }
+		try { growCisterns(group, coarse); } catch { /* samsung */ }
+		try { growFruit(group, coarse); } catch { /* samsung */ }
+		try { growRails(group, coarse); } catch { /* samsung */ }
+		try { smokeTick = growSmoke(group, coarse).tick; } catch { /* samsung */ }
+		try { growNotice(group, coarse); } catch { /* samsung */ }
+		try { growPier(group, coarse); } catch { /* samsung */ }
+		try { growGates(group, coarse); } catch { /* samsung */ }
+		try { growStall(group, coarse); } catch { /* samsung */ }
+		try { growShelves(group, coarse); } catch { /* samsung */ }
+		try { growSteps(group, coarse); } catch { /* samsung */ }
+		try { fountainTick = growFountain(group, coarse).tick; } catch { /* samsung */ }
+		try { growLens(group, coarse); } catch { /* samsung */ }
+		try { growChorus(group, coarse); } catch { /* samsung */ }
+		try { growSeat(group, coarse); } catch { /* samsung */ }
+		try { cascadeTick = growCascade(group, coarse).tick; } catch { /* samsung */ }
+		try { growVeins(group, coarse); } catch { /* samsung */ }
+		try { growLamps(group, coarse); } catch { /* samsung */ }
+		try { growCradle(group, coarse); } catch { /* samsung */ }
+		try { bannerTick = growBanners(group, coarse).tick; } catch { /* samsung */ }
+		try { growAnvil(group, coarse); } catch { /* samsung */ }
+		try { growMosaic(group, coarse); } catch { /* samsung */ }
+		try { growRest(group, coarse); } catch { /* samsung */ }
+		try { hailTick = growHail(group, coarse).tick; } catch { /* samsung */ }
+		try { growArches(group, coarse); } catch { /* samsung */ }
+		try { chimneyTick = growChimney(group, coarse).tick; } catch { /* samsung */ }
+		try { growTablets(group, coarse); } catch { /* samsung */ }
+		try { veilTick = growVeil(group, coarse).tick; } catch { /* samsung */ }
+		try { growRoots(group, coarse); } catch { /* samsung */ }
+		try { growFont(group, coarse); } catch { /* samsung */ }
+		try { growBoughs(group, coarse); } catch { /* samsung */ }
+		try { bellTick = growBells(group, coarse).tick; } catch { /* samsung */ }
+		try { growPylons(group, coarse); } catch { /* samsung */ }
+		try { forgeTick = growForge(group, coarse).tick; } catch { /* samsung */ }
+		try { growScales(group, coarse); } catch { /* samsung */ }
+		try { growPads(group, coarse); } catch { /* samsung */ }
+		try { growHearth(group, coarse); } catch { /* samsung */ }
+		try { growLintel(group, coarse); } catch { /* samsung */ }
+		try { growLedger(group, coarse); } catch { /* samsung */ }
+		try { growSluice(group, coarse); } catch { /* samsung */ }
+		try { growRims(group, coarse); } catch { /* samsung */ }
+		try { growPosts(group, coarse); } catch { /* samsung */ }
+		try { growPrism(group, coarse); } catch { /* samsung */ }
+		try { growLip(group, coarse); } catch { /* samsung */ }
+		try { growStaves(group, coarse); } catch { /* samsung */ }
+		try { growTrough(group, coarse); } catch { /* samsung */ }
+		try { poolTick = growPool(group, coarse).tick; } catch { /* samsung */ }
+		try { growWatch(group, coarse); } catch { /* samsung */ }
+		try { coronaTick = growCorona(group, coarse).tick; } catch { /* samsung */ }
+		try { growVault(group, coarse); } catch { /* samsung */ }
+	});
 	const lampN = coarse ? 90 : 200;
 	const lampPal = [
 		8319231,
@@ -1669,11 +1809,14 @@ export function buildWorld(): CircuitWorld {
         addMesh(g, gBox, mat, R * 0.7, H * 0.38, 0, R * 0.2, H * 0.76, R * 0.2);
         addMesh(g, gArc, mat, 0, H * 0.76, 0, R * 0.7, R * 0.7, R * 0.7);
         break;
-      case "canal":
-        addMesh(g, gBox, mat, 0, 0.28, 0, H * 1.15, 0.56, R * 0.85);
-        addMesh(g, gBox, mat, 0, 0.75, R * 0.48, H * 1.15, 1.5, R * 0.12);
-        addMesh(g, gBox, mat, 0, 0.75, -R * 0.48, H * 1.15, 1.5, R * 0.12);
+      case "canal": {
+        const cL = Math.max(H * 1.7, R * 7.2);
+        addMesh(g, gBox, mat, 0, 0.16, 0, cL, 0.32, R * 1.55);
+        addMesh(g, gBox, mat, 0, 0.5, R * 0.82, cL, 0.7, R * 0.18);
+        addMesh(g, gBox, mat, 0, 0.5, -R * 0.82, cL, 0.7, R * 0.18);
+        addMesh(g, gBox, matRiver, 0, 0.28, 0, cL * 0.96, 0.1, R * 1.15);
         break;
+      }
       case "pad":
         addMesh(g, gCyl, mat, 0, 0.55, 0, R, 1.1, R);
         break;
@@ -1717,9 +1860,12 @@ export function buildWorld(): CircuitWorld {
         addMesh(g, gRing, mat, 0, H * 0.34, 0, R * 0.55, R * 0.55, R * 0.55, Q);
         break;
       case "weir":
-        addMesh(g, gBox, mat, -R * 0.6, H * 0.3, 0, R * 0.7, H * 0.6, R * 0.9);
-        addMesh(g, gBox, mat, R * 0.12, H * 0.2, 0, R * 0.7, H * 0.4, R * 0.9);
-        addMesh(g, gBox, mat, R * 0.82, H * 0.1, 0, R * 0.7, H * 0.2, R * 0.9);
+        addMesh(g, gBox, mat, 0, H * 0.4, -R * 0.7, R * 1.65, H * 0.8, R * 0.42);
+        addMesh(g, gBox, mat, 0, H * 0.26, 0, R * 1.5, H * 0.52, R * 0.4);
+        addMesh(g, gBox, mat, 0, H * 0.12, R * 0.7, R * 1.35, H * 0.24, R * 0.4);
+        addMesh(g, gBox, mat, -R * 0.95, H * 0.34, 0, R * 0.16, H * 0.68, R * 1.65);
+        addMesh(g, gBox, mat, R * 0.95, H * 0.34, 0, R * 0.16, H * 0.68, R * 1.65);
+        addMesh(g, gBox, matRiver, 0, H * 0.2, R * 0.18, R * 0.9, H * 0.08, R * 1.2);
         break;
       case "hearth":
         addMesh(g, gCyl, mat, 0, 0.32, 0, R * 0.62, 0.64, R * 0.62);
@@ -1750,41 +1896,54 @@ export function buildWorld(): CircuitWorld {
         addMesh(g, gCone, mat, 0, H * 0.78, 0, R * 0.72, H * 0.52, R * 0.72);
         addMesh(g, gOcta, mat, R * 0.38, H * 0.62, 0, R * 0.16, R * 0.22, R * 0.16);
         break;
-      case "kiln":
-        addMesh(g, gTaper, mat, 0, H * 0.32, 0, R * 0.7, H * 0.64, R * 0.7);
-        addMesh(g, gCyl, mat, 0, H * 0.86, 0, R * 0.16, H * 0.44, R * 0.16);
-        addMesh(g, gRing, mat, 0, H * 0.28, R * 0.58, R * 0.28, R * 0.28, R * 0.28);
+      case "kiln": {
+        const kR = Math.max(R * 1.08, H * 0.34);
+        const kB = Math.max(4.2, Math.min(H * 0.58, kR * 1.08));
+        const kC = Math.max(3.6, H * 0.38);
+        addMesh(g, gTaper, matGold, 0, kB * 0.5, 0, kR, kB, kR);
+        addMesh(g, gCyl, matGold, 0, kB + kC * 0.42, 0, kR * 0.15, kC, kR * 0.15);
+        addMesh(g, gRing, matGold, 0, kB * 0.36, 0, kR * 0.68, kR * 0.68, kR * 0.68, Q);
+        addMesh(g, gRing, matGoldSoft, 0, kB * 0.42, kR * 0.55, kR * 0.28, kR * 0.28, kR * 0.28);
+        addMesh(g, gOcta, matGoldSoft, 0, kB * 0.5, kR * 0.62, kR * 0.16, kR * 0.24, kR * 0.16);
         break;
+      }
       case "veil":
         addMesh(g, gBox, mat, 0, H * 0.45, 0, R * 1.15, H * 0.9, 0.16);
         addMesh(g, gBox, mat, 0, H * 0.4, R * 0.22, R * 0.88, H * 0.8, 0.1);
         addMesh(g, gCyl, mat, 0, H * 0.92, 0, 0.14, R * 1.2, 0.14, 0, 0, Q);
         break;
       case "lens":
-        addMesh(g, gCyl, mat, 0, H * 0.22, 0, R * 0.12, H * 0.44, R * 0.12);
-        addMesh(g, gRing, mat, 0, H * 0.58, 0, R * 0.52, R * 0.52, R * 0.52);
-        addMesh(g, gOcta, mat, 0, H * 0.58, 0, R * 0.16, R * 0.2, R * 0.16);
+        addMesh(g, gCyl, mat, 0, H * 0.28, 0, R * 0.1, H * 0.56, R * 0.1);
+        addMesh(g, gCone, mat, 0, H * 0.68, 0, R * 1.15, H * 0.22, R * 1.15, Math.PI, 0, 0);
+        addMesh(g, gRing, mat, 0, H * 0.78, 0, R * 0.95, R * 0.95, R * 0.95, Q);
+        addMesh(g, gOcta, mat, 0, H * 0.92, 0, R * 0.18, R * 0.26, R * 0.18);
         break;
       case "cascade":
-        addMesh(g, gBox, mat, 0, H * 0.4, 0, R * 0.55, H * 0.8, 0.32);
-        addMesh(g, gBox, mat, 0, H * 0.82, R * 0.12, R * 0.85, 0.45, R * 0.5);
-        addMesh(g, gBox, mat, 0, 0.32, R * 0.35, R * 0.9, 0.64, R * 0.75);
+        addMesh(g, gBox, mat, 0, H * 0.78, -R * 0.55, R * 1.35, H * 0.18, R * 0.7);
+        addMesh(g, gBox, mat, 0, H * 0.48, 0, R * 1.5, H * 0.16, R * 0.7);
+        addMesh(g, gBox, mat, 0, H * 0.18, R * 0.55, R * 1.65, H * 0.14, R * 0.7);
+        addMesh(g, gBox, matRiver, 0, H * 0.62, -R * 0.22, R * 0.7, H * 0.22, R * 0.12);
+        addMesh(g, gBox, matRiver, 0, H * 0.32, R * 0.28, R * 0.85, H * 0.22, R * 0.12);
         break;
       case "cradle":
-        addMesh(g, gCyl, mat, 0, 0.28, 0, R * 0.48, 0.56, R * 0.48);
-        addMesh(g, gRing, mat, 0, R * 0.3, 0, R * 0.68, R * 0.68, R * 0.68, Q);
-        addMesh(g, gCap, mat, 0, R * 0.48, 0, R * 0.22, R * 0.32, R * 0.22);
+        addMesh(g, gTaper, mat, 0, R * 0.34, 0, R * 1.2, R * 0.68, R * 1.2, Math.PI, 0, 0);
+        addMesh(g, gRing, mat, 0, R * 0.66, 0, R * 1.08, R * 1.08, R * 1.08, Q);
+        addMesh(g, gOcta, mat, 0, R * 0.4, 0, R * 0.22, R * 0.28, R * 0.22);
         break;
       case "inlay":
-        addMesh(g, gHex, mat, 0, 0.22, 0, R, 0.44, R);
-        addMesh(g, gBox, mat, 0, 0.48, 0, R * 1.55, 0.18, R * 0.16);
-        addMesh(g, gBox, mat, 0, 0.48, 0, R * 0.16, 0.18, R * 1.55);
+        addMesh(g, gCyl, mat, 0, 0.1, 0, R * 1.15, 0.2, R * 1.15);
+        addMesh(g, gRing, mat, 0, 0.22, 0, R * 0.88, R * 0.88, R * 0.88, Q);
+        addMesh(g, gRing, mat, 0, 0.24, 0, R * 0.45, R * 0.45, R * 0.45, Q);
+        addMesh(g, gHex, mat, 0, 0.2, 0, R * 0.22, 0.16, R * 0.22);
         break;
-      case "beacon":
-        addMesh(g, gCyl, mat, 0, H * 0.38, 0, R * 0.2, H * 0.76, R * 0.2);
-        addMesh(g, gOcta, mat, 0, H * 0.9, 0, R * 0.48, R * 0.72, R * 0.48);
-        addMesh(g, gRing, mat, 0, H * 0.9, 0, R * 0.58, R * 0.58, R * 0.58, Q);
+      case "beacon": {
+        const fR = Math.max(R * 1.8, H * 0.07);
+        addMesh(g, gCyl, mat, 0, H * 0.44, 0, R * 0.22, H * 0.88, R * 0.22);
+        addMesh(g, gTaper, mat, 0, H * 0.08, 0, R * 0.85, H * 0.16, R * 0.85);
+        addMesh(g, gOcta, matGlow, 0, H * 0.98, 0, fR, fR * 1.45, fR);
+        addMesh(g, gOcta, matGoldSoft, 0, H * 1.08, 0, fR * 0.55, fR * 0.8, fR * 0.55);
         break;
+      }
       default:
         addMesh(g, gOcta, mat, 0, H * 0.22, 0, R * 0.4, H * 0.44, R * 0.4);
     }
@@ -2048,6 +2207,22 @@ export function buildWorld(): CircuitWorld {
 	}
 	function tick(t, dt, cam, resonance) {
 		pumpLater(coarse ? 1 : 2);
+		try { pulseTick?.(t); } catch { /* samsung */ }
+		try { waterTick?.(t); } catch { /* samsung */ }
+		try { heatTick?.(t); } catch { /* samsung */ }
+		try { beamTick?.(t); } catch { /* samsung */ }
+		try { discTick?.(t); } catch { /* samsung */ }
+		try { smokeTick?.(t); } catch { /* samsung */ }
+		try { fountainTick?.(t); } catch { /* samsung */ }
+		try { cascadeTick?.(t); } catch { /* samsung */ }
+		try { bannerTick?.(t); } catch { /* samsung */ }
+		try { hailTick?.(t); } catch { /* samsung */ }
+		try { chimneyTick?.(t); } catch { /* samsung */ }
+		try { veilTick?.(t); } catch { /* samsung */ }
+		try { bellTick?.(t); } catch { /* samsung */ }
+		try { forgeTick?.(t); } catch { /* samsung */ }
+		try { poolTick?.(t); } catch { /* samsung */ }
+		try { coronaTick?.(t); } catch { /* samsung */ }
 		for (const u of clocks) if (u) u.value = t;
 		innerCore.rotation.y = t * .25;
 		innerCore.scale.y = 2.6 + Math.sin(t * 1.4) * .12;

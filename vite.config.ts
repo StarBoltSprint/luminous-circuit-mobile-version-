@@ -162,7 +162,10 @@ function clientAliasPlugin(): Plugin {
 // `0.0.0.0:8080` is the live-preview contract — don't change host/port.
 // The dev server starts once `src/router.tsx` and `src/routes/` exist — see
 // AGENTS.md § "First scaffold".
+const ghPages = process.env.GITHUB_PAGES === "1";
+
 export default defineConfig(({ command, isPreview }) => ({
+  base: ghPages ? "/luminous-circuit-mobile-version-/" : "/",
   server: {
     host: "0.0.0.0",
     port: 8080,
@@ -184,8 +187,8 @@ export default defineConfig(({ command, isPreview }) => ({
     // PWA head + ?install=1 tutorial page; runs before Start/Nitro.
     grokPwaPlugin(),
     tailwindcss(),
-    tanstackStart(),
-    ...(command === "build" || isPreview
+    tanstackStart(ghPages ? { spa: { enabled: true } } : {}),
+    ...(!ghPages && (command === "build" || isPreview)
       ? [
           nitro({
             preset: "vercel",

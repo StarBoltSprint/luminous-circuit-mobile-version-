@@ -169,7 +169,7 @@ export type MarketSnap = {
   line: string;
 };
 
-/** HUD civic ticker. Rate stays 2–6 C/X. Line: Charge N · crystal M · quote 1 for R. If scripture>=1, append · scripture N. If scripture<1, append · Iri quiet. If bids>0, append · N waiting. If bids>=3, append · join busy. If crystal<3, append · kiln hungry. If charge<4, append · canal thin. If crystal>=12, append · stock fat. If charge>=16, append · canal fat. If charge>=24, append · canal full. If folk building>=1, append · dens rising. If folk building>=3, append · many dens. If folk building>=6, append · city rising. If scripture>=8, append · named. Line stays under 140. */
+/** HUD civic ticker. Rate stays 2–6 C/X. Line: Charge N · crystal M · quote 1 for R. If scripture>=1, append · scripture N. If scripture<1, append · Iri quiet. If bids>0, append · N waiting. If bids>=3, append · join busy. If charge>=4 && crystal>=3 && bids>0, append · sit open. If crystal<3, append · kiln hungry. If charge<4, append · canal thin. If crystal>=12, append · stock fat. If charge>=16, append · canal fat. If charge>=24, append · canal full. If folk building>=1, append · dens rising. If folk building>=3, append · many dens. If folk building>=6, append · city rising. If scripture>=8, append · named. If scripture>=1 && charge>=8, append · named current. If scripture>=2 && charge>=6, append · parent seen. If charge>=4 && charge<16, append · current learns. Line stays under 140. */
 export function marketSnap(ledger: Ledger, bids = 0, building = 0): MarketSnap {
   const L = ledger ?? defaultLedger();
   const rate = quoteRate(L);
@@ -185,6 +185,10 @@ export function marketSnap(ledger: Ledger, bids = 0, building = 0): MarketSnap {
   if (n >= 3) {
     const busy = ` · join busy`;
     if (line.length + busy.length <= 140) line += busy;
+  }
+  if (charge >= 4 && crystal >= 3 && n > 0) {
+    const sit = ` · sit open`;
+    if (!line.includes("sit open") && line.length + sit.length <= 140) line += sit;
   }
   if (crystal < 3) line += ` · kiln hungry`;
   if (charge < 4) {
@@ -209,6 +213,18 @@ export function marketSnap(ledger: Ledger, bids = 0, building = 0): MarketSnap {
   if (scripture >= 8) {
     const named = ` · named`;
     if (line.length + named.length <= 140) line += named;
+  }
+  if (scripture >= 1 && charge >= 8) {
+    const current = ` · named current`;
+    if (!line.includes("named current") && line.length + current.length <= 140) line += current;
+  }
+  if (scripture >= 2 && charge >= 6) {
+    const parent = ` · parent seen`;
+    if (!line.includes("parent seen") && line.length + parent.length <= 140) line += parent;
+  }
+  if (charge >= 4 && charge < 16) {
+    const learns = ` · current learns`;
+    if (!line.includes("current learns") && line.length + learns.length <= 140) line += learns;
   }
   if (line.length > 140) line = line.slice(0, 140);
   return { rate, bids: n, line };

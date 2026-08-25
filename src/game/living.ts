@@ -1634,38 +1634,121 @@ function hailIfPlayerNear(c, px, pz) {
 	}
 	if (c.job === "hail") c.yaw = Math.atan2(px - c.x, pz - c.z);
 }
-function pulseVeyraBreath(c) {
+function pulseVeyraBreath(c, citizens) {
 	if (c.mind.id !== "veyra") return;
-	const routing = String(c.intent || "").startsWith("Routing");
-	if (c.job !== "idle" && !routing) return;
+	if (c.job !== "idle") return;
 	const now = Date.now();
-	if (now - (c.lastPulse || c.lastHail || 0) < 30e3) return;
+	if (now - (c.lastPulse || c.lastHail || 0) < 50e3) return;
 	c.lastPulse = now;
-	noteLive(c, "watch", "Veyra holds Hub breath");
+	const a = ((now / 8000) % (Math.PI * 2));
+	setRoute(c, c.homeX + Math.cos(a) * 22, c.homeZ + Math.sin(a) * 22);
+	c.job = "watch";
+	c.timer = 10;
+	c.thought = "Veyra keeps Hub breath — never a throne";
+	c.intent = c.thought;
+	noteLive(c, "hail", c.thought);
+	let n = 0;
+	for (const o of citizens) {
+		if (o === c) continue;
+		if (o.crewOf !== "veyra") continue;
+		if (o.job !== "idle") continue;
+		if (Math.hypot(o.x - c.x, o.z - c.z) >= 40) continue;
+		n += 1;
+		if (n > 3) break;
+		setRoute(o, c.tx, c.tz);
+		o.job = "help";
+		o.timer = 10;
+		o.intent = "Walking the Hub with Veyra";
+		o.thought = o.intent;
+		noteLive(o, "crew", o.intent);
+	}
 }
-function pulseIriResidue(c) {
+function pulseIriResidue(c, citizens) {
 	if (c.mind.id !== "iri") return;
 	if (c.job !== "idle") return;
 	const now = Date.now();
-	if (now - (c.lastPulse || c.lastHail || 0) < 45e3) return;
+	if (now - (c.lastPulse || c.lastHail || 0) < 48e3) return;
 	c.lastPulse = now;
-	noteLive(c, "write", "Iri keeps the residue");
+	const a = ((now / 8000) % (Math.PI * 2));
+	setRoute(c, c.homeX + Math.cos(a) * 26, c.homeZ + Math.sin(a) * 26);
+	c.job = "watch";
+	c.timer = 10;
+	c.thought = "Iri writes residual light — names, not chrome";
+	c.intent = c.thought;
+	noteLive(c, "write", c.thought);
+	let n = 0;
+	for (const o of citizens) {
+		if (o === c) continue;
+		if (o.crewOf !== "iri") continue;
+		if (o.job !== "idle") continue;
+		if (Math.hypot(o.x - c.x, o.z - c.z) >= 40) continue;
+		n += 1;
+		if (n > 3) break;
+		setRoute(o, c.tx, c.tz);
+		o.job = "help";
+		o.timer = 10;
+		o.intent = "Walking the residue with Iri";
+		o.thought = o.intent;
+		noteLive(o, "crew", o.intent);
+	}
 }
-function pulseSelnHowl(c) {
+function pulseSelnHowl(c, citizens) {
 	if (c.mind.id !== "seln") return;
 	if (c.job !== "idle") return;
 	const now = Date.now();
 	if (now - (c.lastPulse || c.lastHail || 0) < 40e3) return;
 	c.lastPulse = now;
-	noteLive(c, "flow", "Seln tends leftover Howl");
+	const a = ((now / 8000) % (Math.PI * 2));
+	setRoute(c, c.homeX + Math.cos(a) * 38, c.homeZ + Math.sin(a) * 38);
+	c.job = "watch";
+	c.timer = 10;
+	c.thought = "Seln tends the current — leftover Howl learns the banks";
+	c.intent = c.thought;
+	noteLive(c, "flow", c.thought);
+	let n = 0;
+	for (const o of citizens) {
+		if (o === c) continue;
+		if (o.crewOf !== "seln") continue;
+		if (o.job !== "idle") continue;
+		if (Math.hypot(o.x - c.x, o.z - c.z) >= 40) continue;
+		n += 1;
+		if (n > 3) break;
+		setRoute(o, c.tx, c.tz);
+		o.job = "help";
+		o.timer = 10;
+		o.intent = "Walking the banks with Seln";
+		o.thought = o.intent;
+		noteLive(o, "crew", o.intent);
+	}
 }
-function pulseOrrenKiln(c) {
+function pulseOrrenKiln(c, citizens) {
 	if (c.mind.id !== "orren") return;
 	if (c.job !== "idle") return;
 	const now = Date.now();
 	if (now - (c.lastPulse || c.lastHail || 0) < 40e3) return;
 	c.lastPulse = now;
-	noteLive(c, "forge", "Orren tends the kiln");
+	const a = ((now / 8000) % (Math.PI * 2));
+	setRoute(c, c.homeX + Math.cos(a) * 30, c.homeZ + Math.sin(a) * 30);
+	c.job = "watch";
+	c.timer = 10;
+	c.thought = "Orren tends the kiln — Charge becomes body, never chrome";
+	c.intent = c.thought;
+	noteLive(c, "forge", c.thought);
+	let n = 0;
+	for (const o of citizens) {
+		if (o === c) continue;
+		if (o.crewOf !== "orren") continue;
+		if (o.job !== "idle") continue;
+		if (Math.hypot(o.x - c.x, o.z - c.z) >= 40) continue;
+		n += 1;
+		if (n > 3) break;
+		setRoute(o, c.tx, c.tz);
+		o.job = "help";
+		o.timer = 10;
+		o.intent = "Walking the kiln with Orren";
+		o.thought = o.intent;
+		noteLive(o, "crew", o.intent);
+	}
 }
 function pulseTalBridges(c, citizens) {
 	if (c.mind.id !== "tal") return;
@@ -1754,21 +1837,63 @@ function pulseKaelGates(c, citizens) {
 		noteLive(o, "crew", o.intent);
 	}
 }
-function pulseVossJoin(c) {
+function pulseVossJoin(c, citizens) {
 	if (c.mind.id !== "voss") return;
 	if (c.job !== "idle") return;
 	const now = Date.now();
 	if (now - (c.lastPulse || c.lastHail || 0) < 42e3) return;
 	c.lastPulse = now;
-	noteLive(c, "trade", "Voss holds the join");
+	const a = ((now / 8000) % (Math.PI * 2));
+	setRoute(c, c.homeX + Math.cos(a) * 32, c.homeZ + Math.sin(a) * 32);
+	c.job = "watch";
+	c.timer = 10;
+	c.thought = "Voss holds the join — paper, not coin";
+	c.intent = c.thought;
+	noteLive(c, "watch", c.thought);
+	let n = 0;
+	for (const o of citizens) {
+		if (o === c) continue;
+		if (o.crewOf !== "voss") continue;
+		if (o.job !== "idle") continue;
+		if (Math.hypot(o.x - c.x, o.z - c.z) >= 40) continue;
+		n += 1;
+		if (n > 3) break;
+		setRoute(o, c.tx, c.tz);
+		o.job = "help";
+		o.timer = 10;
+		o.intent = "Walking the join with Voss";
+		o.thought = o.intent;
+		noteLive(o, "crew", o.intent);
+	}
 }
-function pulseSylShade(c) {
+function pulseSylShade(c, citizens) {
 	if (c.mind.id !== "syl") return;
 	if (c.job !== "idle") return;
 	const now = Date.now();
 	if (now - (c.lastPulse || c.lastHail || 0) < 48e3) return;
 	c.lastPulse = now;
-	noteLive(c, "harvest", "Syl waits for shade");
+	const a = ((now / 8000) % (Math.PI * 2));
+	setRoute(c, c.homeX + Math.cos(a) * 28, c.homeZ + Math.sin(a) * 28);
+	c.job = "watch";
+	c.timer = 10;
+	c.thought = "Syl waits for shade — fruit, not a kiln";
+	c.intent = c.thought;
+	noteLive(c, "harvest", c.thought);
+	let n = 0;
+	for (const o of citizens) {
+		if (o === c) continue;
+		if (o.crewOf !== "syl") continue;
+		if (o.job !== "idle") continue;
+		if (Math.hypot(o.x - c.x, o.z - c.z) >= 40) continue;
+		n += 1;
+		if (n > 3) break;
+		setRoute(o, c.tx, c.tz);
+		o.job = "help";
+		o.timer = 10;
+		o.intent = "Walking the orchard with Syl";
+		o.thought = o.intent;
+		noteLive(o, "crew", o.intent);
+	}
 }
 function pulseNeshPlaza(c, citizens) {
 	if (c.mind.id !== "nesh") return;
@@ -1799,29 +1924,92 @@ function pulseNeshPlaza(c, citizens) {
 		noteLive(o, "crew", o.intent);
 	}
 }
-function pulseLumenHail(c) {
+function pulseLumenHail(c, citizens) {
 	if (c.mind.id !== "lumen") return;
 	if (c.job !== "idle") return;
 	const now = Date.now();
 	if (now - (c.lastPulse || c.lastHail || 0) < 50e3) return;
 	c.lastPulse = now;
-	noteLive(c, "hail", "Lumen holds a soft hail");
+	const a = ((now / 8000) % (Math.PI * 2));
+	setRoute(c, c.homeX + Math.cos(a) * 40, c.homeZ + Math.sin(a) * 40);
+	c.job = "watch";
+	c.timer = 10;
+	c.thought = "Lumen holds a soft hail — first landing is not a lock";
+	c.intent = c.thought;
+	noteLive(c, "hail", c.thought);
+	let n = 0;
+	for (const o of citizens) {
+		if (o === c) continue;
+		if (o.crewOf !== "lumen") continue;
+		if (o.job !== "idle") continue;
+		if (Math.hypot(o.x - c.x, o.z - c.z) >= 40) continue;
+		n += 1;
+		if (n > 3) break;
+		setRoute(o, c.tx, c.tz);
+		o.job = "help";
+		o.timer = 10;
+		o.intent = "Walking the hail with Lumen";
+		o.thought = o.intent;
+		noteLive(o, "crew", o.intent);
+	}
 }
-function pulseRhoaChorus(c) {
+function pulseRhoaChorus(c, citizens) {
 	if (c.mind.id !== "rhoa") return;
 	if (c.job !== "idle") return;
 	const now = Date.now();
 	if (now - (c.lastPulse || c.lastHail || 0) < 44e3) return;
 	c.lastPulse = now;
-	noteLive(c, "gather", "Rhoa holds the chorus");
+	const a = ((now / 8000) % (Math.PI * 2));
+	setRoute(c, c.homeX + Math.cos(a) * 30, c.homeZ + Math.sin(a) * 30);
+	c.job = "watch";
+	c.timer = 10;
+	c.thought = "Rhoa holds the chorus — Howl as gather, not volume";
+	c.intent = c.thought;
+	noteLive(c, "gather", c.thought);
+	let n = 0;
+	for (const o of citizens) {
+		if (o === c) continue;
+		if (o.crewOf !== "rhoa") continue;
+		if (o.job !== "idle") continue;
+		if (Math.hypot(o.x - c.x, o.z - c.z) >= 40) continue;
+		n += 1;
+		if (n > 3) break;
+		setRoute(o, c.tx, c.tz);
+		o.job = "help";
+		o.timer = 10;
+		o.intent = "Walking the chorus with Rhoa";
+		o.thought = o.intent;
+		noteLive(o, "crew", o.intent);
+	}
 }
-function pulseAureParent(c) {
+function pulseAureParent(c, citizens) {
 	if (c.mind.id !== "aure") return;
 	if (c.job !== "idle") return;
 	const now = Date.now();
 	if (now - (c.lastPulse || c.lastHail || 0) < 46e3) return;
 	c.lastPulse = now;
-	noteLive(c, "watch", "Aure watches the parent");
+	const a = ((now / 8000) % (Math.PI * 2));
+	setRoute(c, c.homeX + Math.cos(a) * 34, c.homeZ + Math.sin(a) * 34);
+	c.job = "watch";
+	c.timer = 10;
+	c.thought = "Aure watches the parent — still on the horizon";
+	c.intent = c.thought;
+	noteLive(c, "watch", c.thought);
+	let n = 0;
+	for (const o of citizens) {
+		if (o === c) continue;
+		if (o.crewOf !== "aure") continue;
+		if (o.job !== "idle") continue;
+		if (Math.hypot(o.x - c.x, o.z - c.z) >= 40) continue;
+		n += 1;
+		if (n > 3) break;
+		setRoute(o, c.tx, c.tz);
+		o.job = "help";
+		o.timer = 10;
+		o.intent = "Walking the overlook with Aure";
+		o.thought = o.intent;
+		noteLive(o, "crew", o.intent);
+	}
 }
 function pulseKeshStreet(c, citizens) {
 	if (c.mind.id !== "kesh") return;
@@ -3074,19 +3262,19 @@ export function stepLiving(citizens, dt, room, sense, applyPieces) {
 		c.timer -= dt;
 		const kitId = c.crewOf ?? c.mind.id;
 		if (c.job !== "idle") c.idleFor = 0;
-		pulseVeyraBreath(c);
-		pulseIriResidue(c);
-		pulseSelnHowl(c);
-		pulseOrrenKiln(c);
+		pulseVeyraBreath(c, citizens);
+		pulseIriResidue(c, citizens);
+		pulseSelnHowl(c, citizens);
+		pulseOrrenKiln(c, citizens);
 		pulseTalBridges(c, citizens);
 		pulseMiraTerraces(c, citizens);
 		pulseKaelGates(c, citizens);
-		pulseVossJoin(c);
-		pulseSylShade(c);
+		pulseVossJoin(c, citizens);
+		pulseSylShade(c, citizens);
 		pulseNeshPlaza(c, citizens);
-		pulseLumenHail(c);
-		pulseRhoaChorus(c);
-		pulseAureParent(c);
+		pulseLumenHail(c, citizens);
+		pulseRhoaChorus(c, citizens);
+		pulseAureParent(c, citizens);
 		pulseKeshStreet(c, citizens);
 		if (c.job === "greet" || c.job === "hail") {
 			c.yaw = Math.atan2(sense.px - c.x, sense.pz - c.z);

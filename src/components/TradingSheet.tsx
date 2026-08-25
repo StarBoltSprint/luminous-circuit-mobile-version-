@@ -84,18 +84,27 @@ export function TradingSheet({ hud, onClose, onDuty }: { hud: HudSnap; onClose: 
           <p className="sheet-kicker">Voss · outer bank</p>
           <h3 className="sheet-title">Trading Place</h3>
         </div>
-        <button type="button" className="hud-chip min-h-11 px-3" onClick={onClose}>
+        <button type="button" className="hud-chip min-h-11 px-3 trade-close" onClick={onClose}>
           Close
         </button>
       </header>
       <p className="px-4 text-xs text-muted">Paper join. Charge for crystal. $BOLT is witness only — no deposit.</p>
-      <div className="log-tabs pointer-events-auto">
-        {TABS.map((t) => (
-          <button key={t.id} type="button" className="log-tab" data-on={tab === t.id ? "true" : undefined} onClick={() => setTab(t.id)}>
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <nav className="flex w-full min-w-0 flex-wrap gap-1 pointer-events-auto" aria-label="Trading Place">
+        {TABS.map((t) => {
+          const on = tab === t.id;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              className={`min-h-11 bg-transparent px-3 text-sm font-semibold tracking-[0.04em] ${on ? "border-b-2 border-gold text-gold" : "border-b-2 border-transparent text-muted"}`}
+              aria-current={on ? "page" : undefined}
+              onClick={() => setTab(t.id)}
+            >
+              {t.label}
+            </button>
+          );
+        })}
+      </nav>
       <div className="pointer-events-auto min-h-0 flex-1 overflow-y-auto px-4 py-3 text-sm">
         {tab === "book" && (
           <ul className="space-y-2">

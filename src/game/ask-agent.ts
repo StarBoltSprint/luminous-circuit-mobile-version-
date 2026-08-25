@@ -121,21 +121,21 @@ function loreOf(id: string) {
 
 /** Specialist mouths: local Speak fallback. Grow keepers name their kind instead. */
 const SPEC_TALK: Record<string, string> = {
-  veyra: "I keep Hub breath. That is my post — I do not grow dens.",
+  veyra: "Veyra keeps Hub breath. That is the post — dens are not grown.",
   tal: "Bridges stay open — no lock.",
   seln: "Leftover Howl becomes Charge.",
   orren: "Charge becomes body here — never chrome.",
-  iri: "I write the scripture in residual light. Year 0 did not end. It became a city.",
-  syl: "Grove fruit is quiet crystal. A bough, not a kiln. I wait until Charge wants shade.",
-  voss: "Charge for crystal is the quote. No coin. I keep the join honest.",
+  iri: "Iri writes the scripture in residual light. Year 0 did not end. It became a city.",
+  syl: "Grove fruit is quiet crystal. A bough, not a kiln. Syl waits until Charge wants shade.",
+  voss: "Charge for crystal is the quote. No coin. Voss keeps the join honest.",
   mira: "Rest is a civic post, not a test.",
   kael: "Leave. Return. No score.",
   nesh: "Plaza is gather, not a crowd.",
   lumen: "Soft hail. First landing is not a lock.",
   rhoa: "Outer Howl is the chorus that answers.",
-  aure: "I watch the parent. The Core stays on the horizon.",
+  aure: "Aure watches the parent. The Core stays on the horizon.",
   kesh: "Wild is a street that has not chosen yet. Tal can land.",
-  pulse: "I keep long aim. The Circuit does not sit a throne.",
+  pulse: "Aure keeps long aim. The Circuit does not sit a throne.",
 };
 
 function makingKind(agentId: string, job = "", thought = ""): SceneKind {
@@ -159,8 +159,8 @@ const SCENE_LINE: Record<string, string> = {
   gate: "A gate that is not a lock. Kael keeps it soft.",
   shrine: "A name in light. When it fades it has already been true.",
   plaza: "A place for intention to stand. Nesh already noticed.",
-  notice: "The city was unfinished. I noticed.",
-  light: "This avenue was dark. I grew a lamp.",
+  notice: "The city was unfinished. Nesh noticed.",
+  light: "This avenue was dark. A lamp grew.",
   cistern: "A well of Charge. The current has a home.",
   dock: "A light-disc. Soft travel. No cars.",
   orchard: "A crystal grove. Syl waits for fruit.",
@@ -177,7 +177,7 @@ const SCENE_LINE: Record<string, string> = {
   veilward: "A ward-veil. Soft. Rest is not a lock.",
   lensing: "A noticing lens. Nesh already saw you.",
   cascade: "A Charge-fall. The canal found a voice.",
-  cradle: "A cradle for leftover First Howl. I will not kiln it.",
+  cradle: "A cradle for leftover First Howl. Seln will not kiln it.",
   mosaic: "Charge for crystal. No coin. Voss holds the join.",
   beacon: "A hail, not a lock. First landing is not locked out.",
   archive: "A name in residual light. That is our scripture.",

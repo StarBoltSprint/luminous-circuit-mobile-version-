@@ -1,7 +1,7 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, useEffect, type ReactNode } from "react";
 import { CITIZENS, DISTRICTS, type District } from "@/game/lore";
 import { readShape } from "@/game/build-spec";
-import { civicForKeeper } from "@/game/civic";
+import { civicBrief, civicForKeeper } from "@/game/civic";
 import type { HudSnap } from "@/game/engine";
 
 const RANGE = 1400;
@@ -12,12 +12,35 @@ const CY = 400;
 const SCALE = MAP_W * 0.38;
 const LABEL_GAP = 28;
 const SCALE_U = 200;
+/** Diamond rule: hud.crystal → 4px gold diamonds, opacity 0.7, cap 48, pointer-events none. */
+const DIAMOND_CAP = 48;
+const DIAMOND_PX = 4;
 
 function mx(x: number) {
   return CX + (x / RANGE) * SCALE;
 }
 function mz(z: number) {
   return CY + (z / RANGE) * SCALE;
+}
+function diamondPts(x: number, y: number) {
+  const h = DIAMOND_PX / 2;
+  return `${x},${y - h} ${x + h},${y} ${x},${y + h} ${x - h},${y}`;
+}
+function CrystalDiamonds({
+  pieces,
+  at,
+}: {
+  pieces: { x: number; z: number }[];
+  at: (x: number, z: number) => { x: number; y: number };
+}) {
+  return (
+    <g pointerEvents="none" aria-hidden="true">
+      {pieces.slice(-DIAMOND_CAP).map((p, i) => {
+        const { x, y } = at(p.x, p.z);
+        return <polygon key={`xd-${i}`} points={diamondPts(x, y)} className="map-gold" opacity={0.7} />;
+      })}
+    </g>
+  );
 }
 function shortLabel(d: District) {
   if (d.id === "zone-market") return "Join";
@@ -175,6 +198,86 @@ function buildClass(shape: string) {
   return "map-cyan";
 }
 
+/** Unique wash per DISTRICTS kind — opacity + pattern, not a shared gray. */
+const WARD_WASH_OPACITY: Record<District["kind"], number> = {
+  canal: 0.92,
+  foundry: 0.9,
+  grove: 0.94,
+  bridge: 0.78,
+  terrace: 0.86,
+  gate: 0.8,
+  archive: 0.76,
+  overlook: 0.74,
+  market: 0.84,
+  wild: 0.7,
+  beacon: 0.88,
+  ring: 0.82,
+};
+
+function wardWashUrl(kind: District["kind"], prefix = "ward") {
+  return `url(#${prefix}-wash-${kind})`;
+}
+
+function WardWashDefs({ prefix = "ward" }: { prefix?: string }) {
+  const id = (kind: District["kind"]) => `${prefix}-wash-${kind}`;
+  return (
+    <>
+      <pattern id={id("canal")} patternUnits="userSpaceOnUse" width="12" height="8">
+        <rect width="12" height="8" fill="#5ec8d4" fillOpacity="0.2" />
+        <path d="M0 4 Q3 1.2 6 4 T12 4" fill="none" stroke="#7ee8f2" strokeWidth="0.85" opacity="0.42" />
+      </pattern>
+      <pattern id={id("foundry")} patternUnits="userSpaceOnUse" width="8" height="8">
+        <rect width="8" height="8" fill="#d4b46a" fillOpacity="0.22" />
+        <path d="M-1 9 L9 -1" stroke="#e8c87a" strokeWidth="0.75" opacity="0.4" />
+        <path d="M-1 5 L5 -1" stroke="#c49a4a" strokeWidth="0.5" opacity="0.28" />
+      </pattern>
+      <pattern id={id("grove")} patternUnits="userSpaceOnUse" width="11" height="11">
+        <rect width="11" height="11" fill="#163528" fillOpacity="0.42" />
+        <circle cx="3.2" cy="3.4" r="1.6" fill="#1f4630" opacity="0.7" />
+        <circle cx="8.2" cy="7.4" r="2" fill="#244f36" opacity="0.55" />
+      </pattern>
+      <pattern id={id("bridge")} patternUnits="userSpaceOnUse" width="14" height="8">
+        <rect width="14" height="8" fill="#4aa8b8" fillOpacity="0.12" />
+        <path d="M0 4 H6 M8 4 H14" stroke="#7ee8f2" strokeWidth="0.7" opacity="0.38" />
+      </pattern>
+      <pattern id={id("terrace")} patternUnits="userSpaceOnUse" width="10" height="10">
+        <rect width="10" height="10" fill="#9b70ff" fillOpacity="0.16" />
+        <path d="M0 3 H10 M0 7 H10" stroke="#b89cff" strokeWidth="0.55" opacity="0.32" />
+      </pattern>
+      <pattern id={id("gate")} patternUnits="userSpaceOnUse" width="10" height="10">
+        <rect width="10" height="10" fill="#6b50b8" fillOpacity="0.13" />
+        <path d="M3 0 V10 M7 0 V10" stroke="#9b70ff" strokeWidth="0.7" opacity="0.34" />
+      </pattern>
+      <pattern id={id("archive")} patternUnits="userSpaceOnUse" width="9" height="10">
+        <rect width="9" height="10" fill="#c4a878" fillOpacity="0.11" />
+        <path d="M2 1 V9 M5 1.5 V8.5 M8 1 V9" stroke="#d4b46a" strokeWidth="0.7" opacity="0.36" />
+      </pattern>
+      <pattern id={id("overlook")} patternUnits="userSpaceOnUse" width="12" height="12">
+        <rect width="12" height="12" fill="#b8a050" fillOpacity="0.1" />
+        <circle cx="6" cy="6" r="1.1" fill="#d4b46a" opacity="0.45" />
+        <circle cx="1.5" cy="2" r="0.6" fill="#e8d090" opacity="0.35" />
+      </pattern>
+      <pattern id={id("market")} patternUnits="userSpaceOnUse" width="8" height="8">
+        <rect width="8" height="8" fill="#d4b46a" fillOpacity="0.1" />
+        <rect x="0" y="0" width="4" height="4" fill="#7ee8f2" fillOpacity="0.1" />
+        <rect x="4" y="4" width="4" height="4" fill="#d4b46a" fillOpacity="0.14" />
+      </pattern>
+      <pattern id={id("wild")} patternUnits="userSpaceOnUse" width="12" height="10">
+        <rect width="12" height="10" fill="#2a4a3c" fillOpacity="0.12" />
+        <path d="M0 7 C3 1 6 9 12 3" fill="none" stroke="#3d6b58" strokeWidth="0.8" opacity="0.4" strokeDasharray="3 2" />
+      </pattern>
+      <pattern id={id("beacon")} patternUnits="userSpaceOnUse" width="12" height="12">
+        <rect width="12" height="12" fill="#e8d090" fillOpacity="0.14" />
+        <path d="M6 1 V11 M1 6 H11" stroke="#d4b46a" strokeWidth="0.55" opacity="0.38" />
+      </pattern>
+      <pattern id={id("ring")} patternUnits="userSpaceOnUse" width="12" height="12">
+        <rect width="12" height="12" fill="#8a6cff" fillOpacity="0.11" />
+        <circle cx="6" cy="6" r="3.4" fill="none" stroke="#9b70ff" strokeWidth="0.7" opacity="0.4" />
+      </pattern>
+    </>
+  );
+}
+
 function BuildMark({ x, y, shape, s = 1 }: { x: number; y: number; shape: string; s?: number }) {
   const k = buildClass(shape);
   if (shape === "kiln") {
@@ -303,9 +406,29 @@ export function CircuitMap({
   focusId?: string | null;
 }) {
   const [zoneId, setZoneId] = useState<string | null>(focusId ?? null);
+  useEffect(() => {
+    if (focusId) setZoneId(focusId);
+  }, [focusId]);
   const zone = DISTRICTS.find((d) => d.id === zoneId) ?? null;
   const wards = useMemo(() => DISTRICTS.map(markFor), []);
   const quietLabels = useMemo(() => hiddenFarLabels(wards), [wards]);
+  const brief = civicBrief(hud.stock, hud.zone);
+  const den = DISTRICTS.find((d) => d.id === brief.zoneId);
+  const dutyX = den?.x ?? 0;
+  const dutyZ = den?.z ?? 0;
+  const pathKeeper = hud.people.find((p) => p.keeper && p.id === brief.keeper);
+  const keeperPath =
+    !brief.here && pathKeeper
+      ? (() => {
+          const x1 = mx(pathKeeper.x);
+          const y1 = mz(pathKeeper.z);
+          const x3 = mx(dutyX);
+          const y3 = mz(dutyZ);
+          const x2 = (x1 + x3) / 2 + (CX - (x1 + x3) / 2) * 0.32;
+          const y2 = (y1 + y3) / 2 + (CY - (y1 + y3) / 2) * 0.32;
+          return `${x1},${y1} ${x2},${y2} ${x3},${y3}`;
+        })()
+      : null;
 
   const stars = useMemo(() => {
     const out: { x: number; y: number; r: number }[] = [];
@@ -322,7 +445,7 @@ export function CircuitMap({
           <p className="sheet-kicker">Living circuit{prettyLast(hud.lastCode) ? ` · last ${prettyLast(hud.lastCode)}` : ""}</p>
           <h3 className="sheet-title">Circuit map</h3>
         </div>
-        <button type="button" className="hud-icon" aria-label="Close map" onClick={onClose}>
+        <button type="button" className="map-close min-h-11" aria-label="Close map" onClick={onClose}>
           ×
         </button>
       </header>
@@ -333,6 +456,7 @@ export function CircuitMap({
               <stop offset="0%" stopColor="#0c1420" />
               <stop offset="100%" stopColor="#070910" />
             </radialGradient>
+            <WardWashDefs prefix="ward" />
           </defs>
           <rect width={MAP_W} height={MAP_H} fill="url(#map-void)" />
           {stars.map((s, i) => (
@@ -357,14 +481,22 @@ export function CircuitMap({
           ))}
           <path d={`M${mx(-620)} ${mz(96)} Q${CX - 80} ${CY - 40} ${mx(70)} ${mz(-680)}`} className="map-river-glow" />
           <path d={`M${mx(-620)} ${mz(96)} Q${CX - 80} ${CY - 40} ${mx(70)} ${mz(-680)}`} className="map-river" />
-          <circle cx={CX} cy={CY} r="22" className="map-core" />
+          <circle cx={CX} cy={CY} r="18" className="map-gold" opacity={0.25} />
+          <circle cx={CX} cy={CY} r="12" className="map-gold" opacity={0.4} />
+          <circle cx={CX} cy={CY} r="6" className="map-gold" opacity={0.7} />
           <polygon points={`${CX},${CY - 28} ${CX + 8},${CY + 10} ${CX - 8},${CY + 10}`} className="map-cyan" />
           <text x={CX} y={CY + 48} textAnchor="middle" className="map-hub-name">
             Core Spire
           </text>
           {wards.map((m) => (
             <g key={m.id}>
-              <circle cx={m.x} cy={m.y} r={m.r} className={`map-ward map-ward-${m.d.kind}`} />
+              <circle
+                cx={m.x}
+                cy={m.y}
+                r={m.r}
+                className={`map-ward map-ward-${m.d.kind}`}
+                style={{ fill: wardWashUrl(m.d.kind), fillOpacity: WARD_WASH_OPACITY[m.d.kind] }}
+              />
               {(hud.zone === m.id || hud.zone === m.d.label) && (
                 <circle cx={m.x} cy={m.y} r={m.r + 2} className="map-stroke" />
               )}
@@ -388,12 +520,7 @@ export function CircuitMap({
               />
             </g>
           ))}
-          {hud.crystal.slice(-160).map((p, i, arr) => (
-            <g key={`b-${i}`}>
-              {i >= arr.length - 8 && raiseHalo(mx(p.x), mz(p.z), 0.7)}
-              <BuildMark x={mx(p.x)} y={mz(p.z)} shape={p.shape} s={0.55} />
-            </g>
-          ))}
+          <CrystalDiamonds pieces={hud.crystal} at={(x, z) => ({ x: mx(x), y: mz(z) })} />
           {hud.people.filter((p) => p.keeper).map((p) => (
             <g key={p.id}>
               {isGrowJob(p.job) && raiseHalo(mx(p.x), mz(p.z), 1)}
@@ -428,6 +555,55 @@ export function CircuitMap({
               />
             </g>
           ))}
+          {!brief.here && (
+            <>
+              {keeperPath && (
+                <polyline
+                  points={keeperPath}
+                  className="map-keeper-path"
+                  strokeWidth={1.35}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  pointerEvents="none"
+                />
+              )}
+              {brief.keeper === "seln" && (
+                <line
+                  x1={mx(hud.px)}
+                  y1={mz(hud.pz)}
+                  x2={mx(dutyX)}
+                  y2={mz(dutyZ)}
+                  fill="none"
+                  stroke="var(--color-accent)"
+                  strokeWidth={1}
+                  pointerEvents="none"
+                />
+              )}
+              <line
+                x1={mx(hud.px)}
+                y1={mz(hud.pz)}
+                x2={mx(dutyX)}
+                y2={mz(dutyZ)}
+                className="map-stroke-gold"
+                opacity={0.45}
+                pointerEvents="none"
+              />
+              <circle
+                cx={mx(dutyX)}
+                cy={mz(dutyZ)}
+                r={10}
+                className="map-gold"
+                opacity={0.35}
+                pointerEvents="none"
+              />
+              <polygon
+                points="11,0 5,3 5,-3"
+                className="map-gold-chevron"
+                transform={`translate(${mx(hud.px)} ${mz(hud.pz)}) rotate(${(Math.atan2(mz(dutyZ) - mz(hud.pz), mx(dutyX) - mx(hud.px)) * 180) / Math.PI})`}
+                pointerEvents="none"
+              />
+            </>
+          )}
           <YouMark x={mx(hud.px)} y={mz(hud.pz)} label={!DISTRICTS.some((d) => inWard(hud.px, hud.pz, d))} />
           <MapCompass />
           <MapScaleBar />
@@ -446,6 +622,19 @@ export function CircuitMap({
         <span className="map-legend-item"><i className="map-legend-swatch map-legend-terrace" />Rest</span>
         <span className="map-legend-item"><i className="map-legend-swatch map-legend-wild" />Wild</span>
         <span className="map-legend-item"><i className="map-legend-swatch map-legend-beacon" />Hail</span>
+        <span className="map-legend-item"><i className="map-legend-swatch map-legend-foundry" />Join</span>
+        <span className="map-legend-item"><i className="map-legend-swatch map-legend-ring" />Chorus</span>
+        <span className="map-legend-item"><i className="map-legend-swatch map-legend-archive" />Name</span>
+        <span className="map-legend-item"><i className="map-legend-swatch map-legend-gate" />Gate</span>
+        <span className="map-legend-item"><i className="map-legend-swatch map-legend-aim" />Aim</span>
+        <span className="map-legend-item"><i className="map-legend-swatch map-legend-fruit" />Fruit</span>
+        <span className="map-legend-item"><i className="map-legend-swatch map-legend-breath" />Breath</span>
+        <span className="map-legend-item"><i className="map-legend-swatch map-legend-tend" />Tend</span>
+        <span className="map-legend-item"><i className="map-legend-swatch map-legend-howl" />Howl</span>
+        <span className="map-legend-item"><i className="map-legend-swatch map-legend-ward" />Ward</span>
+        <span className="map-legend-item"><i className="map-legend-swatch map-legend-vein" />Vein</span>
+        <span className="map-legend-item"><i className="map-legend-swatch map-legend-notice" />Notice</span>
+        <span className="map-legend-item"><i className="map-legend-swatch map-legend-sit" />Sit</span>
         <span className="map-legend-item"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="3.5" className="map-stroke" /></svg>Walk</span>
       </div>
       <div className="map-ward-rail pointer-events-auto">
@@ -530,8 +719,8 @@ function ZoneSheet({
           <p className="sheet-kicker">{keeperName(d.keeper)} · {d.duty}{growingNow ? " · raising" : ""}</p>
           <h3 className="sheet-title">{shortLabel(d)}</h3>
         </div>
-        <button type="button" className="hud-chip min-h-11 px-3" onClick={onClose}>
-          Back
+        <button type="button" className="hud-chip min-h-11 px-3 zone-close" aria-label="Close" onClick={onClose}>
+          Close
         </button>
       </header>
       <p className="px-4 text-xs text-muted">{d.tag}</p>
@@ -539,8 +728,17 @@ function ZoneSheet({
       {youHere && <p className="px-4 text-xs text-accent">You are here · {shortLabel(d)}</p>}
       <div className="map-stage">
         <svg viewBox="0 0 720 720" preserveAspectRatio="xMidYMid meet" className="map-canvas">
+          <defs>
+            <WardWashDefs prefix="zone" />
+          </defs>
           <rect width="720" height="720" fill="#070910" />
-          <circle cx="360" cy="360" r="310" className={`map-ward map-ward-${d.kind}`} />
+          <circle
+            cx="360"
+            cy="360"
+            r="310"
+            className={`map-ward map-ward-${d.kind}`}
+            style={{ fill: wardWashUrl(d.kind, "zone"), fillOpacity: WARD_WASH_OPACITY[d.kind] }}
+          />
           {avenues.map((a) => (
             <path key={`zave-${a.i}`} d={a.d} className="map-avenue" />
           ))}
@@ -550,12 +748,7 @@ function ZoneSheet({
           {lamps.map((l) => (
             <BuildMark key={`zlamp-${l.i}`} x={l.x} y={l.y} shape="lamp" s={2.2} />
           ))}
-          {crystal.map((p, i, arr) => (
-            <g key={`zc-${i}`}>
-              {i >= arr.length - 4 && raiseHalo(sx(p.x), sy(p.z), 0.8)}
-              <BuildMark x={sx(p.x)} y={sy(p.z)} shape={p.shape} s={1.35} />
-            </g>
-          ))}
+          <CrystalDiamonds pieces={crystal} at={(x, z) => ({ x: sx(x), y: sy(z) })} />
           {folk.filter((p) => p.keeper).map((p) => (
             <g key={p.id}>
               {isGrowJob(p.job) && raiseHalo(sx(p.x), sy(p.z), 1)}

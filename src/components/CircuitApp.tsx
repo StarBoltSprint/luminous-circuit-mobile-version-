@@ -22,6 +22,7 @@ import { TradingSheet } from "./TradingSheet";
 import { DISTRICTS } from "@/game/lore";
 import { civicForZone, civicBrief, enactCivic, howlVerb } from "@/game/civic";
 import { buzz } from "@/game/haptics";
+import { loadChain, needleDeg, talkWitness } from "@/game/play";
 
 const EMPTY: HudSnap = {
   zone: null,
@@ -242,6 +243,34 @@ export function CircuitApp() {
 
   const zoneAsk = civicForZone(hud.zone);
   const brief = civicBrief(hud.stock ?? { charge: 0, crystal: 0, scripture: 0, bids: 0 }, hud.zone);
+  const need = (brief.line.split(".")[0] || brief.line).trim();
+  const walkLine = brief.here ? "Hold Howl, release on gold" : `Walk ${brief.walk}`;
+  const stood = Math.max(0, Math.floor(Number((hud as { stood?: number }).stood) || 0));
+  const howlP = hud.howlProgress || 0;
+  const howlSweet = howlP >= 0.92 && howlP <= 1.18;
+  const howlOver = howlP > 1.18;
+  const den = DISTRICTS.find((d) => d.id === brief.zoneId);
+  const dutyDeg = needleDeg(hud.px, hud.pz, den?.x ?? 0, den?.z ?? 0, hud.heading);
+  const dutyNear = Boolean(brief.here) || Math.abs(dutyDeg) < 18;
+  const witnessed = Boolean((hud as { witness?: boolean }).witness) || talkWitness(hud.nearby?.id ?? null, brief.keeper);
+  const still = (hud as { still?: boolean }).still;
+  const standStill = Boolean(brief.here && howlP > 0.04 && !still);
+  const talkFirst = Boolean(brief.here && hud.nearby?.id === brief.keeper && !witnessed);
+  const howlThis = brief.here && walkLine && hud.reading?.title ? `Howl this ${hud.reading.title}` : null;
+  const hintLines: string[] = [];
+  if (standStill) hintLines.push("Stand still");
+  if (talkFirst) hintLines.push("Talk, then Howl — they will know you.");
+  if (howlThis && hintLines.length < 2) hintLines.push(howlThis);
+  const onChain = brief.keeper === "seln" || brief.keeper === "orren" || brief.keeper === "voss";
+  if (!brief.here && onChain && hintLines.length < 2) {
+    const need = ["seln", "orren", "voss"] as const;
+    let i = 0;
+    for (const s of loadChain()) {
+      if (i < need.length && s === need[i]) i += 1;
+    }
+    const chainHint = i < 1 ? "Sit: Tend → Kiln → Join" : i < 2 ? "Next: Kiln" : i < 3 ? "Next: Join" : "";
+    if (chainHint) hintLines.push(chainHint);
+  }
 
   return (
     <div className="circuit-root" style={{ position: "relative", width: "100%", height: "100dvh", background: "#070910" }}>
@@ -264,7 +293,14 @@ export function CircuitApp() {
               >
                 <BookOpen className="res-icon" strokeWidth={2.25} aria-hidden />
                 <div className="res-copy">
-                  <span className="res-label">Names</span>
+                  <span className="res-label">
+                    Names
+                    {stood > 0 ? (
+                      <span className="ml-1 normal-case tracking-[0.06em] text-[9px] font-semibold text-gold">
+                        Stood {stood}
+                      </span>
+                    ) : null}
+                  </span>
                   <span className="res-value">{Math.round(hud.stock?.scripture ?? 0)}</span>
                 </div>
               </button>
@@ -293,7 +329,7 @@ export function CircuitApp() {
         )}
 
         {!title && (hud.zone || hud.stock?.line) && (
-          <p className="pointer-events-none mt-1 truncate px-1 text-[10px] uppercase tracking-[0.14em] text-muted">
+          <p className="hud-ticker hud-ticker-live" aria-live="polite">
             {hud.zone ?? "The Circuit"}
             {hud.stock?.line ? ` · ${hud.stock.line}` : ""}
             {` · ${hud.stock?.rate ?? 3}C/X`}
@@ -308,24 +344,35 @@ export function CircuitApp() {
           </p>
         )}
 
-        {playing && brief && !mapOpen && !logOpen && !joinOpen && (
-          <div className="pointer-events-auto px-1 pt-1">
-            <button
-              type="button"
-              className="hud-chip min-h-11 px-3 max-w-full"
-              onClick={() => {
-                if (brief.here) {
-                  if (brief.join) setJoinOpen(true);
-                  return;
-                }
-                setLogOpen(false);
-                setJoinOpen(false);
-                setMapFocus(brief.zoneId);
-                setMapOpen(true);
-              }}
-            >
-              {brief.here ? `Hold Howl · ${brief.walk}` : brief.line}
-            </button>
+        {playing && !mapOpen && !logOpen && !joinOpen && (
+          <div className="px-1 pt-1">
+            <div className="flex min-w-0 items-center gap-2">
+              <button
+                type="button"
+                className="hud-chip hud-duty pointer-events-auto min-h-11 min-w-0 flex-1 flex-col items-start justify-center gap-0 py-2 text-left"
+                data-near={dutyNear ? "true" : undefined}
+                aria-label={`${need}. ${walkLine}`}
+                onClick={() => {
+                  if (brief.here) {
+                    if (brief.join) setJoinOpen(true);
+                    return;
+                  }
+                  setLogOpen(false);
+                  setJoinOpen(false);
+                  setMapFocus(brief.zoneId);
+                  setMapOpen(true);
+                }}
+              >
+                <span className="hud-title block text-[13px] leading-tight">{need}</span>
+                <span className="block text-[11px] font-semibold tracking-wide text-accent">{walkLine}</span>
+              </button>
+              {!brief.here && (
+                <span className="duty-needle" data-near={Math.abs(dutyDeg) < 18 ? "true" : undefined} aria-hidden style={{ transform: `rotate(${dutyDeg}deg)` }} />
+              )}
+            </div>
+            {hintLines.map((line) => (
+              <p key={line} className="hint-still">{line}</p>
+            ))}
           </div>
         )}
 
@@ -336,26 +383,30 @@ export function CircuitApp() {
             </div>
           )}
           {playing && awayOpen && hud.away && !mapOpen && !logOpen && !joinOpen && (
-            <div className="nearby-card pointer-events-auto mt-2">
-              <p className="text-[10px] uppercase tracking-[0.18em] text-muted">While you were gone</p>
-              <p className="hud-title mt-1">{hud.away}</p>
-              <button type="button" className="hud-chip mt-2 min-h-11 px-3" onClick={() => setAwayOpen(false)}>Heard</button>
+            <div className="nearby-card">
+              <p className="nearby-name">While you were gone</p>
+              <p className="nearby-line">{hud.away}</p>
+              <button type="button" className="nearby-ask" onClick={() => setAwayOpen(false)}>Heard</button>
             </div>
           )}
           {hud.nearby && playing && !logOpen && !mapOpen && !joinOpen && (
-            <div className="nearby-card pointer-events-auto" data-toast={hud.toast ? "true" : undefined}>
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="hud-title">{hud.nearby.name.split(" ")[0]}</p>
-                  <p className="text-xs text-muted">{hud.nearby.role}</p>
-                </div>
-                <span className="text-xs text-accent">{hud.nearby.job}</span>
-              </div>
-              <p className="mt-2 text-sm">{hud.nearby.line}</p>
+            <div className="nearby-card" data-toast={hud.toast ? "true" : undefined}>
+              <p className="nearby-name">{hud.nearby.name.split(" ")[0]}</p>
+              <span className="nearby-job">{hud.nearby.job}</span>
+              <p className="nearby-line">{hud.nearby.line}</p>
+              <button
+                type="button"
+                className="nearby-ask"
+                onPointerDown={(e) => { e.preventDefault(); engineRef.current?.input.setTalkHeld(true); }}
+                onPointerUp={() => engineRef.current?.input.setTalkHeld(false)}
+                onPointerCancel={() => engineRef.current?.input.setTalkHeld(false)}
+              >
+                Talk
+              </button>
               {zoneAsk && (
                 <button
                   type="button"
-                  className="hud-chip mt-2 min-h-11 px-3"
+                  className="nearby-ask"
                   onClick={() => {
                     if (zoneAsk.join) {
                       setMapOpen(false);
@@ -368,15 +419,13 @@ export function CircuitApp() {
                   {zoneAsk.label}
                 </button>
               )}
-              {hud.nearby && (
-                <button
-                  type="button"
-                  className="hud-chip mt-2 min-h-11 px-3"
-                  onClick={() => engineRef.current?.escort(hud.nearby!.id)}
-                >
-                  Walk with {hud.nearby.name.split(" ")[0]}
-                </button>
-              )}
+              <button
+                type="button"
+                className="nearby-ask"
+                onClick={() => engineRef.current?.escort(hud.nearby!.id)}
+              >
+                Walk with {hud.nearby.name.split(" ")[0]}
+              </button>
             </div>
           )}
         </div>
@@ -398,15 +447,24 @@ export function CircuitApp() {
               <button
                 type="button"
                 className="action-howl"
-                data-held={hud.howlProgress > 0.04 ? "true" : undefined}
+                data-held={howlP > 0.04 ? "true" : undefined}
+                data-sweet={howlSweet ? "true" : undefined}
                 aria-label={howlVerb(zoneAsk?.keeper ?? null)}
                 onPointerDown={(e) => { e.preventDefault(); engineRef.current?.input.setHowl(true); }}
                 onPointerUp={() => engineRef.current?.input.setHowl(false)}
                 onPointerCancel={() => engineRef.current?.input.setHowl(false)}
               >
                 {howlVerb(zoneAsk?.keeper ?? null)}
-                <span className="howl-meter" aria-hidden>
-                  <span style={{ width: `${Math.max(4, Math.round((hud.howlProgress || 0) * 100))}%` }} />
+                {witnessed ? (
+                  <span className="mt-0.5 text-[8px] font-semibold uppercase tracking-[0.12em] text-gold">Witnessed</span>
+                ) : null}
+                <span
+                  className="howl-meter"
+                  data-sweet={howlSweet ? "true" : undefined}
+                  data-over={howlOver ? "true" : undefined}
+                  aria-hidden
+                >
+                  <span style={{ width: `${howlP <= 0.01 ? 0 : Math.min(100, Math.max(4, Math.round(howlP * 100)))}%` }} />
                 </span>
               </button>
             </div>
@@ -415,50 +473,37 @@ export function CircuitApp() {
         )}
       </div>
 
+
       {title && (
         <div
           role="button"
           tabIndex={0}
           aria-label="Land in Core Spire City"
+          className="title-land"
           onPointerDown={(e) => { e.preventDefault(); landNow(); }}
           onTouchStart={(e) => { e.preventDefault(); landNow(); }}
           onClick={landNow}
-          style={{
-            position: "absolute",
-            inset: 0,
-            zIndex: 40,
-            border: 0,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "flex-end",
-            padding: "0 24px 96px",
-            background: "linear-gradient(180deg, rgba(7,9,16,0.2) 0%, rgba(7,9,16,0.92) 70%)",
-            color: "#e8eef8",
-            fontFamily: "system-ui, sans-serif",
-            pointerEvents: "auto",
-            touchAction: "manipulation",
-            cursor: "pointer",
-          }}
         >
-          <span style={{ fontSize: 13, letterSpacing: "0.18em", textTransform: "uppercase", color: "#8b93a7" }}>Luminous Circuit</span>
-          <span style={{ fontSize: 34, fontWeight: 800, marginTop: 8, lineHeight: 1 }}>
+          <span className="title-kicker">Luminous Circuit</span>
+          <span className="title-hero">
             {bootError ? "Tap to retry" : wantLand ? "Landing…" : "Tap to land"}
           </span>
-          <span style={{ fontSize: 14, color: "#7ee8f2", marginTop: 10, marginBottom: 28 }}>
+          <span className="title-sub">
             {bootError ?? (booted ? "Core Spire is open" : wantLand ? "Growing crystal underfoot…" : "Waking the city…")}
           </span>
         </div>
       )}
 
       {paused && (
-        <div className="absolute inset-0 z-30 flex items-end sm:items-center justify-center bg-bg/55 px-4 hud-safe">
-          <div className="panel w-[min(92%,24rem)] px-6 py-6">
-            <h2 className="hud-title text-2xl">Paused</h2>
-            <p className="mt-1 text-sm text-muted">Walkers freeze. Pause is sacred.</p>
-            <div className="mt-5 flex flex-col gap-2">
-              <button type="button" className="h-11 rounded-lg bg-fg text-bg font-medium" onClick={() => engineRef.current?.setMode("play")}>Resume</button>
-              <button type="button" className="h-11 rounded-lg border border-border text-fg" onClick={() => { engineRef.current?.reset(); engineRef.current?.setMode("play"); }}>Reland at plaza</button>
+        <div className="pause-veil">
+          <div className="pause-sheet">
+            <div className="panel w-[min(92%,24rem)] px-6 py-6">
+              <h2 className="hud-title text-2xl">Paused</h2>
+              <p className="mt-1 text-sm text-muted">Walkers freeze. Pause is sacred.</p>
+              <div className="mt-5 flex flex-col gap-2">
+                <button type="button" className="hud-chip h-11 rounded-lg bg-fg text-bg font-medium" onClick={() => engineRef.current?.setMode("play")}>Resume</button>
+                <button type="button" className="hud-chip pause-reland h-11 rounded-lg border border-border text-fg" onClick={() => { engineRef.current?.reset(); engineRef.current?.setMode("play"); }}>Reland at plaza</button>
+              </div>
             </div>
           </div>
         </div>
@@ -508,10 +553,10 @@ export function CircuitApp() {
 function DebugSheet({ hud, onClose }: { hud: HudSnap; onClose: () => void }) {
   const d = hud.debug ?? { fps: 0, bug: "", citizens: 0, building: 0, structures: 0 };
   return (
-    <div className="absolute inset-0 z-50 flex flex-col bg-bg/95 hud-safe">
+    <div className="debug-sheet absolute inset-0 z-50 flex flex-col bg-bg/95 hud-safe">
       <header className="pointer-events-auto flex items-center justify-between px-4">
         <h3 className="hud-title text-lg">City health</h3>
-        <button type="button" className="hud-chip min-h-11 px-3" onClick={onClose}>Close</button>
+        <button type="button" className="debug-close hud-chip min-h-11 px-3" onClick={onClose}>Close</button>
       </header>
       <div className="pointer-events-auto px-4 text-sm">
         <p className={d.bug ? "text-danger" : "text-accent"}>{d.bug || "No crash. Loop is holding."}</p>

@@ -179,7 +179,7 @@ function clampLastAway(raw: Partial<LastAway> | undefined): LastAway {
   if (!raw || typeof raw !== "object") return { ...EMPTY_AWAY };
   const beats = Number(raw.beats);
   const at = Number(raw.at);
-  const summary = typeof raw.summary === "string" ? raw.summary.slice(0, 160) : "";
+  const summary = typeof raw.summary === "string" ? raw.summary.slice(0, 180) : "";
   let n = Number.isFinite(beats) ? clamp(Math.floor(beats), 0, MAX_AWAY_BEATS) : 0;
   if (summary && n === 0) n = 1;
   return {
