@@ -29,11 +29,20 @@ jobs:
       - run: npx vite build
       - name: SPA fallback
         run: |
-          OUT=dist
-          if [ -d .output/public ]; then OUT=.output/public; fi
+          OUT=dist/client
+          if [ ! -d "$OUT" ]; then
+            if [ -d dist ]; then OUT=dist
+            elif [ -d .output/public ]; then OUT=.output/public
+            fi
+          fi
+          if [ -f "$OUT/_shell.html" ] && [ ! -f "$OUT/index.html" ]; then
+            cp "$OUT/_shell.html" "$OUT/index.html"
+          fi
           if [ -f "$OUT/index.html" ]; then cp "$OUT/index.html" "$OUT/404.html"; fi
+          touch "$OUT/.nojekyll"
           echo "PAGES_OUT=$OUT" >> "$GITHUB_ENV"
           ls -la "$OUT" | head
+
       - uses: actions/configure-pages@v5
         with:
           enablement: true
