@@ -1,6 +1,6 @@
 /** Pair a player's Grok Bot to this city. Not official xAI OAuth. */
 
-export const CIRCUIT_MCP = "https://luminous-circuit-mcp.neon-mulberry.workers.dev";
+export const CIRCUIT_MCP = "https://luminous-circuit-mcp.enthusiastic-bear.workers.dev";
 export const SHARED_LAND = "SPIRE";
 
 const STORE = "lc-grok-bot-pair";
