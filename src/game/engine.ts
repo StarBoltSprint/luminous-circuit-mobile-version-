@@ -117,19 +117,49 @@ export type EngineHandle = {
 
 type HudFn = (s: HudSnap) => void;
 
+function wantSoftGl() {
+	try {
+		const q = new URLSearchParams(location.search);
+		if (q.get("soft") === "1" || q.get("capture") === "1") return true;
+	} catch { /* samsung */ }
+	return false;
+}
+
+function readGpuName(renderer) {
+	try {
+		const gl = renderer.getContext();
+		const bits = [];
+		try {
+			const ext = gl && gl.getExtension("WEBGL_debug_renderer_info");
+			if (ext) bits.push(String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) || ""));
+		} catch { /* samsung */ }
+		try { bits.push(String(gl.getParameter(gl.RENDERER) || "")); } catch { /* samsung */ }
+		try { bits.push(String(gl.getParameter(gl.VERSION) || "")); } catch { /* samsung */ }
+		return bits.filter(Boolean).join(" ");
+	} catch {
+		return "";
+	}
+}
+
+function gpuIsSoftware(name: string) {
+	return /swiftshader|llvmpipe|softpipe|microsoft basic|gdi generic|virtualbox|vmware|lavapipe/i.test(name || "");
+}
+
 function makeRenderer(canvas: HTMLCanvasElement) {
 	const tries = [{
 		canvas,
 		antialias: true,
 		alpha: false,
 		powerPreference: "default",
-		failIfMajorPerformanceCaveat: false
+		failIfMajorPerformanceCaveat: false,
+		preserveDrawingBuffer: true
 	}, {
 		canvas,
 		antialias: false,
 		alpha: false,
 		powerPreference: "low-power",
-		failIfMajorPerformanceCaveat: false
+		failIfMajorPerformanceCaveat: false,
+		preserveDrawingBuffer: true
 	}];
 	let last;
 	for (const opts of tries) try {
@@ -159,20 +189,29 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 	canvas.style.touchAction = "none";
 	const save = loadSave();
 	const renderer = makeRenderer(canvas);
+	const gpuName = readGpuName(renderer);
+	const cheapGL = wantSoftGl() || gpuIsSoftware(gpuName);
+	if (cheapGL) {
+		renderer.setPixelRatio(1);
+		renderer.shadowMap.enabled = false;
+		renderer.toneMapping = THREE.NoToneMapping;
+		renderer.toneMappingExposure = 1;
+		renderer.setClearColor(0x0c1220, 1);
+	}
 	const scene = new THREE.Scene();
 	const mobile = typeof window !== "undefined" && (
 		(navigator.maxTouchPoints || 0) > 0
 		|| window.matchMedia("(pointer: coarse)").matches
 		|| window.innerWidth < 900
 	);
-	const fogBase = mobile ? 16e-5 : 24e-5;
-	scene.fog = new THREE.FogExp2(528412, fogBase);
+	const fogBase = cheapGL ? 8e-5 : (mobile ? 16e-5 : 24e-5);
+	scene.fog = new THREE.FogExp2(cheapGL ? 0x0c1220 : 528412, fogBase);
 	const camera = new THREE.PerspectiveCamera(54, 1, .25, 9e3);
 	const world = buildWorld();
 	scene.add(world.group);
 	window.setTimeout(() => {
 		try {
-			if (mobile || coarsePointer || (typeof window !== "undefined" && window.innerWidth < 900)) return;
+			if (cheapGL || mobile || coarsePointer || (typeof window !== "undefined" && window.innerWidth < 900)) return;
 			const pmrem = new THREE.PMREMGenerator(renderer);
 			const envScene = new THREE.Scene();
 			envScene.add(new THREE.HemisphereLight(8308968, 1181724, 1.25));
@@ -553,7 +592,7 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 	let lastPeople = [];
 	let lastCrystal = [];
 	let heavyHud = 0;
-	let lastBug = "";
+	let lastBug = cheapGL ? (`softGL ${gpuName}`.trim().slice(0, 80) || "softGL") : "";
 	let smoothFps = 30;
 	let awayCard = save.lastAway?.summary || null;
 	let awayBeats = save.lastAway?.beats ?? 0;
@@ -581,7 +620,7 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 	})();
 	window.setTimeout(() => {
 		try {
-			if (mobile || coarsePointer || (typeof window !== "undefined" && window.innerWidth < 900)) return;
+			if (cheapGL || mobile || coarsePointer || (typeof window !== "undefined" && window.innerWidth < 900)) return;
 			composer = new EffectComposer(renderer);
 			composer.addPass(new RenderPass(scene, camera));
 			const bw = canvas.clientWidth || 1280;
@@ -596,9 +635,18 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 		}
 	}, 80);
 	function draw() {
-		if (bloomPass) bloomPass.strength = (coarsePointer ? .28 : .34) + resonance / 100 * .1;
-		if (composer) composer.render();
-		else renderer.render(scene, camera);
+		try {
+			if (composer && !cheapGL) {
+				if (bloomPass) bloomPass.strength = (coarsePointer ? .28 : .34) + resonance / 100 * .1;
+				composer.render();
+			} else {
+				renderer.render(scene, camera);
+			}
+		} catch {
+			composer = null;
+			bloomPass = null;
+			try { renderer.render(scene, camera); } catch { /* samsung */ }
+		}
 	}
 	function pushOut() {
 		const r = Math.hypot(player.x, player.z);
