@@ -35,7 +35,9 @@ import { bindAgentHandle, installWebMcp } from "@/game/webmcp";
 import { GrokBotSignIn } from "./GrokBotSignIn";
 import { BotRelay } from "./BotRelay";
 import { BrainSheet } from "./BrainSheet";
+import { SubmitChangeSheet } from "./SubmitChangeSheet";
 import { loadPreview } from "@/game/bolt-brain";
+import { loadChangePreview } from "@/game/city-change";
 
 const EMPTY: HudSnap = {
   zone: null,
@@ -152,6 +154,7 @@ export function CircuitApp() {
   const [moreOpen, setMoreOpen] = useState(false);
   const [botOpen, setBotOpen] = useState(false);
   const [brainOpen, setBrainOpen] = useState(false);
+  const [submitOpen, setSubmitOpen] = useState(false);
   const [inhabitOpen, setInhabitOpen] = useState(false);
   const [folkName, setFolkName] = useState("");
   const [folkCrew, setFolkCrew] = useState("veyra");
@@ -462,6 +465,16 @@ export function CircuitApp() {
               <span className="hud-slim-live">{liveLine}</span>
             </p>
             <p className="hud-slim-zone">{hud.zone ?? "Circuit"}</p>
+            {playing ? (
+              <button
+                type="button"
+                className="hud-slim-textbtn"
+                aria-label="Submit a change"
+                onClick={() => { setMoreOpen(false); setSubmitOpen(true); }}
+              >
+                Submit
+              </button>
+            ) : null}
             <button
               type="button"
               className="hud-slim-more"
@@ -476,6 +489,7 @@ export function CircuitApp() {
 
         {moreOpen && !title && (
           <div className="hud-more pointer-events-auto">
+            <button type="button" className="hud-more-item" onClick={() => { setMoreOpen(false); setSubmitOpen(true); }}>Submit a change</button>
             <button type="button" className="hud-more-item" onClick={() => { setMoreOpen(false); setInhabitOpen(true); setFolkBook(engineRef.current?.folkBook() ?? loadFolkBook()); }}>Inhabit</button>
             <button type="button" className="hud-more-item" onClick={async () => {
               setMoreOpen(false);
@@ -494,7 +508,11 @@ export function CircuitApp() {
 
         {playing && !mapOpen && !logOpen && !joinOpen && !moreOpen && !hud.toast && (
           <p className="hud-slim-duty">
-            {loadPreview() ? `PREVIEW · ${loadPreview()?.author}'s Bolt brain · not live` : walkLine}
+            {loadChangePreview()
+              ? `PREVIEW · ${loadChangePreview()?.author}: ${loadChangePreview()?.wish.slice(0, 48)}`
+              : loadPreview()
+                ? `PREVIEW · ${loadPreview()?.author}'s Bolt brain · not live`
+                : walkLine}
           </p>
         )}
 
@@ -896,6 +914,14 @@ export function CircuitApp() {
       )}
       {botOpen && <GrokBotSignIn onClose={() => setBotOpen(false)} />}
       {brainOpen && <BrainSheet engine={engineRef.current} onClose={() => setBrainOpen(false)} />}
+      {submitOpen && (
+        <SubmitChangeSheet
+          engine={engineRef.current}
+          px={hud.px ?? 0}
+          pz={hud.pz ?? 78}
+          onClose={() => setSubmitOpen(false)}
+        />
+      )}
       {debugOpen && !title && <DebugSheet hud={hud} onClose={() => setDebugOpen(false)} />}
     </div>
   );

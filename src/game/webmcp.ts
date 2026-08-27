@@ -11,6 +11,14 @@ import {
   submitDraft,
   voteSubmit,
 } from "./bolt-brain";
+import {
+  buildChange,
+  grokBuildChangeBrief,
+  loadChanges,
+  markChangeLive,
+  setChangePreview,
+  voteChange,
+} from "./city-change";
 
 export type AgentHud = {
   mode?: string;
@@ -196,6 +204,69 @@ const TOOLS: Tool[] = [
     execute(args) {
       const r = makeLive(String(args?.id || ""));
       return r.ok ? { ok: true } : { ok: false, error: r.error };
+    },
+  },
+  {
+    name: "submit_change",
+    description:
+      "Submit ANY city change (crystal, light, law, Bolt brain). Preview on. One-shot. Do not mill in Grok Bot chat.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        wish: { type: "string", description: "The change in words." },
+        author: { type: "string" },
+      },
+      required: ["wish"],
+    },
+    execute(args) {
+      const made = buildChange(String(args?.author || "walker"), String(args?.wish || ""), "grok-bot");
+      if (!made.ok) return { ok: false, error: made.error };
+      setChangePreview(made.row);
+      return { ok: true, id: made.row.id, preview: true, kind: made.row.kind, vote: "Players tap Chat: go live, then Put live." };
+    },
+  },
+  {
+    name: "list_changes",
+    description: "Pending submitted changes. Preview, vote, put live.",
+    execute() {
+      return { changes: loadChanges().filter((r) => r.status === "pending") };
+    },
+  },
+  {
+    name: "preview_change",
+    description: "Preview a submitted change on this land. Not live.",
+    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+    execute(args) {
+      const row = loadChanges().find((r) => r.id === args?.id);
+      if (!row) return { ok: false, error: "No such change." };
+      setChangePreview(row);
+      return { ok: true, preview: true, wish: row.wish };
+    },
+  },
+  {
+    name: "vote_change_live",
+    description: "Chat vote: this submitted change should go live.",
+    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+    execute(args) {
+      const row = voteChange(String(args?.id || ""));
+      if (!row) return { ok: false, error: "No such change." };
+      return { ok: true, votes: row.votes, id: row.id };
+    },
+  },
+  {
+    name: "put_change_live",
+    description: "Put a submitted change live on this land after preview (and votes).",
+    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+    execute(args) {
+      const live = markChangeLive(String(args?.id || ""));
+      return live ? { ok: true, wish: live.wish } : { ok: false, error: "No such change." };
+    },
+  },
+  {
+    name: "how_to_submit_change",
+    description: "How to submit any change with Grok Build (no Bot quota) or Grok Bot (one shot).",
+    execute() {
+      return { brief: grokBuildChangeBrief() };
     },
   },
   {

@@ -19,7 +19,8 @@ import { gradeHowl, howlMult, gradeLine, aimingParent, markStood, dutyDone, talk
 import { cityRig, keeperRig, mixRig, EYE_SEC, clampPull } from "./eye";
 import { canBirthToday, markBornToday, canPeerBirth, markPeerBirth, canPeerGrow, markPeerGrow, interpretGrow, loadFolkBook, writeFolkBook, writeLastWish, skillOf, interpretWish, type FolkPost } from "./inhabit";
 import { tickCrafts, grokBuildBrief } from "./crafts";
-import { pickLine, activePack, loadDraft, saveDraft, submitDraft, voteSubmit, makeLive, setPreview, loadQueue } from "./bolt-brain";
+import { pickLine, activePack, loadDraft, saveDraft, submitDraft, voteSubmit, makeLive, setPreview, loadQueue, setLive } from "./bolt-brain";
+import { buildChange, loadChanges, markChangeLive, setChangePreview, voteChange } from "./city-change";
 
 export type HudSnap = {
   zone: string | null;
@@ -1530,6 +1531,48 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 				if (!r.ok) return { ok: false, line: r.error || "Could not go live." };
 				setPreview(null);
 				showToast("That Bolt brain is live on this land.");
+				emitHud();
+				return { ok: true, line: "Live." };
+			}
+			if (kind === "change_submit") {
+				const made = buildChange(String(cmd.author || cmd.name || "walker"), String(cmd.text || ""), "grok-bot", { x: player.x, z: player.z });
+				if (!made.ok) return { ok: false, line: made.error };
+				setChangePreview(made.row);
+				if (made.row.pieces.length) {
+					try { world.showGhosts(made.row.pieces.map((p) => ({ shape: p.shape, x: p.x, z: p.z, h: p.h || 6, r: p.r || 5, rot: p.rot || 0, mat: p.mat || "crystal" }))); } catch { /* samsung */ }
+				}
+				showToast(`PREVIEW · ${made.row.author}: ${made.row.wish.slice(0, 64)}`);
+				emitHud();
+				return { ok: true, line: `Submitted ${made.row.id}` };
+			}
+			if (kind === "change_preview") {
+				const row = loadChanges().find((r) => r.id === cmd.id || r.id === cmd.text);
+				if (!row) return { ok: false, line: "No such change." };
+				setChangePreview(row);
+				if (row.pieces.length) {
+					try { world.showGhosts(row.pieces.map((p) => ({ shape: p.shape, x: p.x, z: p.z, h: p.h || 6, r: p.r || 5, rot: p.rot || 0, mat: p.mat || "crystal" }))); } catch { /* samsung */ }
+				}
+				showToast(`PREVIEW · ${row.wish.slice(0, 72)}`);
+				emitHud();
+				return { ok: true, line: `Preview ${row.id}` };
+			}
+			if (kind === "change_vote") {
+				const row = voteChange(String(cmd.id || cmd.text || ""));
+				if (!row) return { ok: false, line: "No such change." };
+				showToast(`Chat vote: ${row.votes} for go live`);
+				emitHud();
+				return { ok: true, line: `${row.votes} votes` };
+			}
+			if (kind === "change_live") {
+				const live = markChangeLive(String(cmd.id || cmd.text || ""));
+				if (!live) return { ok: false, line: "No such change." };
+				if (live.pieces.length) {
+					const added = world.applyPieces(live.pieces.map((p) => ({ shape: p.shape, x: p.x, z: p.z, h: p.h || 6, r: p.r || 5, rot: p.rot || 0, mat: p.mat || "crystal" })));
+					if (added > 0) showToast(`Live: ${live.wish.slice(0, 64)}`);
+				}
+				if (live.pack) setLive(live.pack);
+				try { world.clearGhosts(); } catch { /* samsung */ }
+				showToast("That change is live on this land.");
 				emitHud();
 				return { ok: true, line: "Live." };
 			}

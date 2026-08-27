@@ -38,6 +38,8 @@ This site is **Grok Bot compatible**: WebMCP tools on the play page, this file f
 | `how_to_iterate_brain` | SuperGrok / in-game Bolt Brain sheet — no Bot quota |
 | `draft_brain` / `submit_brain` | Local draft, then submit + preview |
 | `preview_brain` / `vote_brain_live` / `put_brain_live` | Preview, chat vote, go live |
+| `submit_change` | Submit ANY change (one shot). Preview on. Do not mill |
+| `list_changes` / `preview_change` / `vote_change_live` / `put_change_live` | Queue, preview, vote, go live |
 
 Speak (in-game inhabit) uses the **player's** xAI key only. Do not call Speak API from densify.
 
