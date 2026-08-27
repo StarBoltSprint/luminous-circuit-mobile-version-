@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import type { EngineHandle, HudSnap } from "@/game/engine";
-import { ackCmds, pushHud, readPair } from "@/game/bot-pair";
+import { ackCmds, pushHud, readPair, SHARED_LAND } from "@/game/bot-pair";
 
 /** Pulls Grok Bot commands into this running land. Player tab is the host. */
 export function BotRelay({ engine, hud }: { engine: EngineHandle | null; hud: HudSnap }) {
@@ -9,9 +9,9 @@ export function BotRelay({ engine, hud }: { engine: EngineHandle | null; hud: Hu
     let stop = false;
     const tick = async () => {
       const pair = readPair();
-      if (!pair?.code || pair.status === "missing") return;
+      const land = SHARED_LAND;
       try {
-        const cmds = await pushHud(pair.code, {
+        const cmds = await pushHud(land, {
           zone: hud.zone,
           nearby: hud.nearby,
           stock: hud.stock,
@@ -26,7 +26,8 @@ export function BotRelay({ engine, hud }: { engine: EngineHandle | null; hud: Hu
           engine.applyBotCmd(cmd);
           if (cmd.id) ids.push(cmd.id);
         }
-        await ackCmds(pair.code, ids);
+        await ackCmds(land, ids);
+        if (pair?.code && pair.code !== land) await pushHud(pair.code, { zone: hud.zone }).catch(() => {});
       } catch {
         /* relay optional */
       }

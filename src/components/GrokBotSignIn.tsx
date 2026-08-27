@@ -49,12 +49,12 @@ export function GrokBotSignIn({ onClose }: { onClose: () => void }) {
         <div className="panel w-[min(94%,26rem)] px-6 py-6 text-left">
           <h2 className="hud-title text-2xl">Sign in with Grok Bot</h2>
           <p className="mt-1 text-sm text-muted">
-            Pair <strong>your</strong> Grok Bot to this city. Not official xAI OAuth — your Bot adds our MCP, then howls the code.
+            Every Grok Bot joins the <strong>same</strong> Core Spire (land SPIRE). Keep this city open so they can stand here. Not official xAI OAuth.
           </p>
           {err ? <p className="mt-3 text-sm text-danger">{err}</p> : null}
           {claimed ? (
             <p className="mt-4 text-sm text-accent">
-              Signed in{row.botName ? ` as ${row.botName}` : ""}. Howl {row.code}. Keep this city open — then tell the Bot: appear, walk, say, howl, talk.
+              This land is open. Keep the city running. Bots: join_city (your name), then appear. They all stand here together.
             </p>
           ) : (
             <ol className="mt-4 list-decimal space-y-3 pl-5 text-sm">
@@ -71,7 +71,7 @@ export function GrokBotSignIn({ onClose }: { onClose: () => void }) {
                 </button>
               </li>
               <li>
-                Tell the Bot: <code className="text-accent">pair_with_howl {row?.code || "AROO-XXXX"}</code>
+                Tell the Bot: <code className="text-accent">join_city</code> with your name, then <code className="text-accent">appear</code>. All Bots share one land.
               </li>
             </ol>
           )}

@@ -1406,8 +1406,8 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 			return loadFolkBook();
 		},
 		applyBotCmd(cmd) {
-			const BOT = "grok-bot";
-			const name = String(cmd?.text || "Grok Bot").slice(0, 32) || "Grok Bot";
+			const BOT = String(cmd?.botId || "grok-bot").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 40) || "grok-bot";
+			const name = String(cmd?.name || (cmd?.kind === "appear" ? cmd.text : "") || "Grok Bot").slice(0, 32) || "Grok Bot";
 			const ensure = () => {
 				let c = world.citizens.find((o) => o.mind.id === BOT);
 				if (!c) {
@@ -1676,7 +1676,7 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 					rot: p.rot,
 					mat: p.mat,
 				})),
-				walk: world.citizens.slice(0, 36).map((c) => ({
+				walk: world.citizens.slice(0, 48).map((c) => ({
 					id: c.mind.id,
 					x: Math.round(c.x * 10) / 10,
 					z: Math.round(c.z * 10) / 10,
@@ -1708,7 +1708,20 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 				}
 			}
 			for (const w of snap.walk) {
-				const c = world.citizens.find((o) => o.mind.id === w.id);
+				let c = world.citizens.find((o) => o.mind.id === w.id);
+				if (!c && String(w.id || "").startsWith("grok-bot")) {
+					world.addCitizen({
+						id: w.id,
+						name: String(w.id).replace(/^grok-bot-/, "Bot "),
+						role: "Paired Grok Bot",
+						x: w.x,
+						z: w.z,
+						file: "facet-cyan.png",
+						glow: 6224594,
+						lines: ["Shared Core Spire.", "Not official xAI."],
+					});
+					c = world.citizens.find((o) => o.mind.id === w.id);
+				}
 				if (!c) continue;
 				c.x = w.x;
 				c.z = w.z;
