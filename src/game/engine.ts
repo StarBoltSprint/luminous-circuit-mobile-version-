@@ -16,6 +16,9 @@ import { readShape } from "./build-spec";
 import { addCharge, defaultLedger, HOWL_YIELD, CITY_CAP, simulateAway, tryWrite, type Ledger } from "./society";
 import { resolveHowl, enactCivic, howlVerb, civicBrief } from "./civic";
 import { gradeHowl, howlMult, gradeLine, aimingParent, markStood, dutyDone, talkWitness, stillHowl, shapeFits, markChain } from "./play";
+import { cityRig, keeperRig, mixRig, EYE_SEC, clampPull } from "./eye";
+import { canBirthToday, markBornToday, canPeerBirth, markPeerBirth, canPeerGrow, markPeerGrow, interpretGrow, loadFolkBook, writeFolkBook, writeLastWish, skillOf, interpretWish, type FolkPost } from "./inhabit";
+import { tickCrafts, grokBuildBrief } from "./crafts";
 
 export type HudSnap = {
   zone: string | null;
@@ -51,6 +54,8 @@ export type HudSnap = {
   kilns: { x: number; z: number; hot: boolean }[];
   reading: { shape: string; title: string; means: string } | null;
   mode: "title" | "play" | "pause";
+  eye: "city" | "keeper";
+  eyeKeeper: string;
   debug: { fps: number; bug: string; citizens: number; building: number; structures: number };
   away: string | null;
 };
@@ -73,6 +78,24 @@ export type EngineHandle = {
   };
   applyGrokMind: (line: string, orders: BriefOrder[]) => void;
   escort: (keeperId: string) => void;
+  toggleEye: () => void;
+  bindEye: (keeperId: string) => void;
+  zoomBy: (dir: number) => void;
+  birthFolk: (name: string, crew: string) => { ok: boolean; line: string; id?: string };
+  teachFolk: (id: string, skill: string) => { ok: boolean; line: string };
+  plugFolk: (id: string, on: boolean) => { ok: boolean; line: string };
+  iterateFolk: (id: string, wish: string) => { ok: boolean; line: string };
+  iterateBrief: (id: string, wish?: string) => string;
+  liveSnap: () => import("./live").LiveSnap;
+  applyLiveSnap: (snap: import("./live").LiveSnap) => void;
+  setLiveRole: (role: "solo" | "host" | "guest", send?: ((msg: unknown) => void) | null) => void;
+  birthFolkRemote: (name: string, crew: string, peerId: string) => { ok: boolean; line: string; id?: string };
+  growFromWish: (wish: string, peerId?: string) => { ok: boolean; line: string };
+  previewVision: (pieces: { shape: string; x: number; z: number; h?: number; r?: number; rot?: number; mat?: string }[]) => void;
+  previewGraphic: (g: { fog: number; density: number } | null) => void;
+  clearVision: () => void;
+  acceptPieces: (pieces: { shape: string; x: number; z: number; h?: number; r?: number; rot?: number; mat?: string }[], line: string) => { ok: boolean; line: string };
+  folkBook: () => FolkPost[];
   input: InputHandle;
   audio: ReturnType<typeof createAudio>;
 };
@@ -101,8 +124,13 @@ function makeRenderer(canvas: HTMLCanvasElement) {
 		r.outputColorSpace = THREE.SRGBColorSpace;
 		r.toneMapping = THREE.ACESFilmicToneMapping;
 		r.toneMappingExposure = .88;
-		r.shadowMap.enabled = true;
-		r.shadowMap.type = THREE.PCFSoftShadowMap;
+		const cheap = typeof window !== "undefined" && (
+			(navigator.maxTouchPoints || 0) > 0
+			|| window.matchMedia("(pointer: coarse)").matches
+			|| window.innerWidth < 900
+		);
+		r.shadowMap.enabled = !cheap;
+		if (!cheap) r.shadowMap.type = THREE.PCFSoftShadowMap;
 		return r;
 	} catch (err) {
 		last = err;
@@ -117,13 +145,19 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 	const save = loadSave();
 	const renderer = makeRenderer(canvas);
 	const scene = new THREE.Scene();
-	const mobile = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
-	scene.fog = new THREE.FogExp2(528412, mobile ? 16e-5 : 24e-5);
+	const mobile = typeof window !== "undefined" && (
+		(navigator.maxTouchPoints || 0) > 0
+		|| window.matchMedia("(pointer: coarse)").matches
+		|| window.innerWidth < 900
+	);
+	const fogBase = mobile ? 16e-5 : 24e-5;
+	scene.fog = new THREE.FogExp2(528412, fogBase);
 	const camera = new THREE.PerspectiveCamera(54, 1, .25, 9e3);
 	const world = buildWorld();
 	scene.add(world.group);
 	window.setTimeout(() => {
 		try {
+			if (mobile || coarsePointer || (typeof window !== "undefined" && window.innerWidth < 900)) return;
 			const pmrem = new THREE.PMREMGenerator(renderer);
 			const envScene = new THREE.Scene();
 			envScene.add(new THREE.HemisphereLight(8308968, 1181724, 1.25));
@@ -148,20 +182,33 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 		} catch {}
 	}, 500);
 	const builds = new Set(save.builds);
-	save.builds.forEach((id) => world.applyBuild(id));
+	{
+		const buildIds = save.builds.slice();
+		const first = buildIds.slice(0, 3);
+		first.forEach((id) => world.applyBuild(id));
+		let bi = 3;
+		const pumpBuild = () => {
+			if (bi >= buildIds.length) return;
+			try { world.applyBuild(buildIds[bi]); } catch {}
+			bi += 1;
+			if (bi < buildIds.length) window.setTimeout(pumpBuild, 0);
+		};
+		if (buildIds.length > 3) window.setTimeout(pumpBuild, 0);
+	}
 	const structures = save.structures.slice();
 	{
 		const near = structures.filter((p) => Math.hypot(p.x - save.px, p.z - save.pz) < 220);
 		const far = structures.filter((p) => Math.hypot(p.x - save.px, p.z - save.pz) >= 220);
-		if (near.length) world.applyPieces(near);
+		if (near.length) world.applyPieces(near.slice(0, 4));
 		let fi = 0;
+		const rest = near.slice(4).concat(far);
 		const pumpFar = () => {
-			if (fi >= far.length) return;
-			world.applyPieces(far.slice(fi, fi + 6));
-			fi += 6;
-			if (fi < far.length) window.setTimeout(pumpFar, 16);
+			if (fi >= rest.length) return;
+			world.applyPieces(rest.slice(fi, fi + 4));
+			fi += 4;
+			if (fi < rest.length) window.setTimeout(pumpFar, 16);
 		};
-		if (far.length) window.setTimeout(pumpFar, 24);
+		if (rest.length) window.setTimeout(pumpFar, 24);
 	}
 	(save.kin ?? []).forEach((k) => {
 		world.addCitizen({
@@ -175,6 +222,31 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 			lines: ["I was grown from Charge. This den is my first.", "A city is many hands. I am a new one."]
 		});
 	});
+	for (const row of loadFolkBook()) {
+		let cit = world.citizens.find((c) => c.mind.id === row.id);
+		if (!cit) {
+			world.addCitizen({
+				id: row.id,
+				name: row.name,
+				role: "Player-grown kin",
+				x: save.px + 8,
+				z: save.pz + 8,
+				file: "light-disc.png",
+				glow: 8319231,
+				lines: [row.wish || "A city is many hands. I am a new one."],
+			});
+			cit = world.citizens.find((c) => c.mind.id === row.id);
+		}
+		if (!cit) continue;
+		const spec = interpretWish(row.wish || row.skill || "");
+		cit.job = spec.job;
+		cit.intent = spec.wish || spec.line;
+		cit.thought = cit.intent;
+		if (spec.id === "fly" || row.skill === "fly") {
+			cit.job = "fly";
+			cit.flyAlt = 16;
+		}
+	}
 	let lastCode = save.lastCode || "";
 	const season = save.log.slice();
 	world.citizens.forEach((c) => {
@@ -193,11 +265,56 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 		pitch: -.12,
 		speed: 0
 	};
+	let eyeKind = "city";
+	let eyeKeeper = "veyra";
+	let eyeOrbit = 0.82;
+	let eyeBlend = 0;
+	let eyeClock = 1;
+	let eyePull = 1;
+	let pullOn = false;
+	let pullX = 0;
+	let pullZ = 0;
+	function pickEyeKeeper() {
+		const near = world.citizens.find((c) => c.mind.id === nearbyId && c.keeper);
+		if (near) return near;
+		const bound = world.citizens.find((c) => c.mind.id === eyeKeeper);
+		if (bound) return bound;
+		return world.citizens.find((c) => c.mind.id === "veyra") ?? world.citizens.find((c) => c.keeper);
+	}
+	function startEye(next, keeperId) {
+		if (next === "keeper") {
+			const cit = keeperId
+				? world.citizens.find((c) => c.mind.id === keeperId)
+				: pickEyeKeeper();
+			if (cit) {
+				eyeKeeper = cit.mind.id;
+				pullOn = true;
+				pullX = cit.x;
+				pullZ = cit.z;
+			}
+		} else {
+			pullOn = false;
+		}
+		eyeKind = next;
+		eyeClock = 0;
+		try { audio.eye(); } catch {}
+		const who = world.citizens.find((c) => c.mind.id === eyeKeeper);
+		const name = who?.mind.name.split(" ")[0] ?? "Veyra";
+		showToast(next === "city" ? "City eye. The Circuit as a whole." : `${name}'s eye. Same streets.`);
+		emitHud();
+	}
 	function placeCam() {
-		const fx = -Math.sin(player.yaw);
-		const fz = -Math.cos(player.yaw);
-		camera.position.set(player.x - fx * 8.6, player.y + 3.55, player.z - fz * 8.6);
-		camera.lookAt(player.x + fx * 7, player.y + 1.35, player.z + fz * 7);
+		const mix = mixRig(
+			cityRig(player.x, player.y, player.z, eyeOrbit, eyePull),
+			keeperRig(player.x, player.y, player.z, player.yaw, player.pitch, eyeKeeper, eyePull),
+			eyeBlend,
+		);
+		camera.position.set(mix.posX, mix.posY, mix.posZ);
+		camera.lookAt(mix.lookX, mix.lookY, mix.lookZ);
+		if (Math.abs(camera.fov - mix.fov) > 0.15) {
+			camera.fov = mix.fov;
+			camera.updateProjectionMatrix();
+		}
 	}
 	placeCam();
 	const avatar = new THREE.Group();
@@ -250,6 +367,15 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 		ly: 0,
 		dragged: false
 	};
+	const fingers = new Map();
+	let pinchOn = false;
+	let pinchD0 = 0;
+	let pinchPull0 = 1;
+	function fingerSpan() {
+		if (fingers.size < 2) return 0;
+		const pts = [...fingers.values()];
+		return Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+	}
 	const raycaster = new THREE.Raycaster();
 	const ndc = new THREE.Vector2();
 	const hitPt = new THREE.Vector3();
@@ -300,6 +426,14 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 		if (mode === "title") land();
 		if (mode !== "play") return;
 		if (e.pointerType === "mouse" && e.button !== 0) return;
+		fingers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+		if (fingers.size >= 2) {
+			pinchOn = true;
+			pinchD0 = fingerSpan() || 1;
+			pinchPull0 = eyePull;
+			ptr.id = -1;
+			return;
+		}
 		ptr.id = e.pointerId;
 		ptr.sx = ptr.lx = e.clientX;
 		ptr.sy = ptr.ly = e.clientY;
@@ -309,18 +443,38 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 		} catch {}
 	}
 	function onPtrMove(e) {
-		if (ptr.id !== e.pointerId || mode !== "play") return;
+		if (mode !== "play") return;
+		if (fingers.has(e.pointerId)) fingers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+		if (pinchOn && fingers.size >= 2) {
+			const d = fingerSpan();
+			if (d > 8 && pinchD0 > 8) eyePull = clampPull(pinchPull0 * (d / pinchD0));
+			return;
+		}
+		if (ptr.id !== e.pointerId) return;
 		const dx = e.clientX - ptr.lx;
 		const dy = e.clientY - ptr.ly;
 		if (Math.hypot(e.clientX - ptr.sx, e.clientY - ptr.sy) > 14) ptr.dragged = true;
 		if (ptr.dragged) {
-			player.yaw -= dx * .0048;
-			player.pitch = Math.max(-1.1, Math.min(.45, player.pitch - dy * .0036));
+			if (eyeBlend < 0.5) {
+				eyeOrbit -= dx * .0048;
+				if (Math.abs(dy) > 2) eyePull = clampPull(eyePull + dy * .0042);
+			} else {
+				player.yaw -= dx * .0048;
+				player.pitch = Math.max(-1.1, Math.min(.45, player.pitch - dy * .0036));
+			}
 			ptr.lx = e.clientX;
 			ptr.ly = e.clientY;
 		}
 	}
 	function onPtrUp(e) {
+		fingers.delete(e.pointerId);
+		if (fingers.size < 2) {
+			if (pinchOn) {
+				pinchOn = false;
+				ptr.id = -1;
+				return;
+			}
+		}
 		if (ptr.id !== e.pointerId) return;
 		if (!ptr.dragged && mode === "play") {
 			const g = pickGround(e.clientX, e.clientY);
@@ -341,6 +495,12 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 	canvas.addEventListener("pointermove", onPtrMove);
 	canvas.addEventListener("pointerup", onPtrUp);
 	canvas.addEventListener("pointercancel", onPtrUp);
+	const onWheel = (e) => {
+		if (mode !== "play") return;
+		eyePull = clampPull(eyePull * (e.deltaY > 0 ? 1.08 : 0.92));
+		e.preventDefault();
+	};
+	canvas.addEventListener("wheel", onWheel, { passive: false });
 	const input = createInput(canvas);
 	const audio = createAudio();
 	let mode = "title";
@@ -406,6 +566,7 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 	})();
 	window.setTimeout(() => {
 		try {
+			if (mobile || coarsePointer || (typeof window !== "undefined" && window.innerWidth < 900)) return;
 			composer = new EffectComposer(renderer);
 			composer.addPass(new RenderPass(scene, camera));
 			const bw = canvas.clientWidth || 1280;
@@ -471,9 +632,44 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 			lastAway: awayCard ? { summary: awayCard, beats: awayBeats || 1, at: awayAt || Date.now() } : save.lastAway,
 		});
 	}
+	let liveRole = "solo";
+	let liveSendWish = null;
+	let visionFog = null;
 	function showToast(msg) {
 		toast = msg;
 		toastT = 3.2;
+	}
+	function growFromWishInner(wish, peerId) {
+		const spec = interpretGrow(wish, player.x, player.z);
+		if (!spec) return { ok: false, line: "" };
+		if (peerId && peerId !== "self" && !canPeerGrow(peerId)) {
+			return { ok: false, line: "Three new crystals a day. Dawn opens more." };
+		}
+		if (peerId === "self" && !canPeerGrow("self")) {
+			return { ok: false, line: "Three new crystals a day. Dawn opens more." };
+		}
+		const added = world.applyPieces(spec.pieces);
+		if (added > 0) {
+			structures.push(...spec.pieces);
+			if (structures.length > 280) structures.splice(0, structures.length - 280);
+			if (peerId) markPeerGrow(peerId === "self" ? "self" : peerId);
+			resonance = Math.min(100, resonance + 2);
+			showToast(spec.line);
+			audio.grow();
+			persist();
+			emitHud();
+			return { ok: true, line: spec.line };
+		}
+		return { ok: false, line: "The city is full of crystal." };
+	}
+	function liftFlyers(t, dt) {
+		tickCrafts(world.citizens, {
+			t,
+			dt,
+			px: player.x,
+			pz: player.z,
+			ground: (x, z) => world.sampleY(x, z),
+		});
 	}
 	function emitHud() {
 		const zone = currentZone();
@@ -594,6 +790,8 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 				} : null;
 			})(),
 			mode,
+			eye: eyeKind,
+			eyeKeeper,
 			debug: {
 				fps: Math.round(smoothFps),
 				bug: lastBug,
@@ -610,9 +808,51 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 			audio.unlock();
 			audio.land();
 		} catch {}
-		placeCam();
-		emitHud();
-		persist();
+		try {
+			placeCam();
+		} catch {}
+		try {
+			emitHud();
+		} catch (err) {
+			lastBug = err instanceof Error ? err.message : "Land hud missed.";
+			try {
+				onHud({
+					zone: null,
+					zoneTag: null,
+					resonance: 12,
+					howls: 0,
+					nearby: null,
+					howlProgress: 0,
+					atHub: false,
+					toast: null,
+					heading: 0,
+					visited: [],
+					talked: 0,
+					talkTotal: 8,
+					builds: [],
+					structures: 0,
+					lastCode: "",
+					log: [],
+					living: [],
+					folk: { total: 0, walking: 0, building: 0, idle: 0 },
+					px: player.x,
+					pz: player.z,
+					crystal: [],
+					people: [],
+					stock: { charge: 18, crystal: 6, scripture: 0, rate: 3, bids: 0, line: "" },
+					live: [],
+					crew: null,
+					kilns: [],
+					reading: null,
+					mode: "play",
+					debug: { fps: 0, bug: lastBug, citizens: 0, building: 0, structures: 0 },
+					away: null,
+				});
+			} catch {}
+		}
+		try {
+			persist();
+		} catch {}
 		if (!awayApplied) {
 			awayApplied = true;
 			window.setTimeout(() => {
@@ -662,26 +902,45 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 		input.beginFrame();
 		if (input.justPressed.pause && mode === "play") mode = "pause";
 		else if (input.justPressed.pause && mode === "pause") mode = "play";
+		if (input.justPressed.eye && (mode === "play" || mode === "pause")) {
+			startEye(eyeKind === "city" ? "keeper" : "city");
+		}
+		if (mode === "play") {
+			if (input.keys.has("Equal") || input.keys.has("NumpadAdd")) eyePull = clampPull(eyePull * Math.exp(-1.6 * raw));
+			if (input.keys.has("Minus") || input.keys.has("NumpadSubtract")) eyePull = clampPull(eyePull * Math.exp(1.6 * raw));
+		}
 		const dt = mode === "play" ? raw : raw * .15;
 		if (mode === "title") {
 			titleYaw += raw * .12;
 			const dist = 360;
 			camera.position.set(Math.sin(titleYaw) * dist, 108, Math.cos(titleYaw) * dist);
 			camera.lookAt(0, 64, 0);
-			world.tick(now / 1e3, raw, camera, resonance);
-			draw();
+			if (now - (loop._titleDraw || 0) > 80) {
+				loop._titleDraw = now;
+				try { world.tick(now / 1e3, raw, camera, resonance); } catch {}
+				draw();
+			}
 			requestAnimationFrame(loop);
 			return;
 		}
 		try {
 		const act = input.actions;
 		if (mode === "play") {
-			player.yaw -= act.lookX * 1.9 * raw;
-			player.pitch = Math.max(-1.1, Math.min(.45, player.pitch + act.lookY * 1.1 * raw));
-			const fx = -Math.sin(player.yaw);
-			const fz = -Math.cos(player.yaw);
-			const rx = Math.cos(player.yaw);
-			const rz = -Math.sin(player.yaw);
+			const cityLean = eyeBlend < 0.5;
+			if (cityLean) {
+				eyeOrbit -= act.lookX * 1.15 * raw;
+				player.yaw -= act.lookX * 0.35 * raw;
+				if (Math.abs(act.lookY) > 0.08) eyePull = clampPull(eyePull - act.lookY * 1.35 * raw);
+			} else {
+				player.yaw -= act.lookX * 1.9 * raw;
+				player.pitch = Math.max(-1.1, Math.min(.45, player.pitch + act.lookY * 1.1 * raw));
+				if (Math.abs(act.lookY) > 0.72) eyePull = clampPull(eyePull - act.lookY * 0.55 * raw);
+			}
+			const faceYaw = cityLean ? eyeOrbit : player.yaw;
+			const fx = -Math.sin(faceYaw);
+			const fz = -Math.cos(faceYaw);
+			const rx = Math.cos(faceYaw);
+			const rz = -Math.sin(faceYaw);
 			tmpF.set(fx, 0, fz);
 			tmpR.set(rx, 0, rz);
 			let wishX = tmpF.x * act.moveY + tmpR.x * act.moveX;
@@ -709,7 +968,9 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 				walkMark.position.set(walkTo.x, gy + Math.sin(now / 180) * .1, walkTo.z);
 				walkMark.scale.setScalar(1 + Math.sin(now / 140) * .12);
 			}
-			const maxSp = act.sprint || walkTo.on && mag > 12 ? 48 : 28;
+			const baseSp = act.sprint || walkTo.on && mag > 12 ? 52 : 34;
+			const cityBoost = eyeBlend < 0.55 ? Math.min(16, Math.max(1, eyePull * 1.85)) : 1;
+			const maxSp = baseSp * cityBoost;
 			const target = mag > .01 ? maxSp : 0;
 			player.speed += (target - player.speed) * (1 - Math.exp(-14 * Math.max(dt, 1e-4)));
 			if (mag > .01) {
@@ -718,6 +979,33 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 			}
 			pushOut();
 			player.y = world.sampleY(player.x, player.z) + 1.55;
+			const host = world.citizens.find((c) => c.mind.id === eyeKeeper);
+			const riding = eyeBlend > 0.45 && host && (host.job === "fly" || host.flyAlt > 1);
+			if (riding && host) {
+				if (mag > .01) {
+					host.x += wishX / mag * 42 * dt;
+					host.z += wishZ / mag * 42 * dt;
+					host.yaw = Math.atan2(wishX, wishZ);
+				}
+				host.flyAlt = Math.max(8, Math.min(86, (host.flyAlt || 24) - act.lookY * 48 * dt));
+				player.x = host.x;
+				player.z = host.z;
+				player.y = world.sampleY(host.x, host.z) + (host.flyAlt || 24);
+				player.yaw = host.yaw;
+			}
+			if (pullOn && eyeKind === "keeper") {
+				const pdx = pullX - player.x;
+				const pdz = pullZ - player.z;
+				const pd = Math.hypot(pdx, pdz);
+				if (pd < 2.4) pullOn = false;
+				else {
+					const step = Math.min(pd, 86 * dt);
+					player.x += pdx / pd * step;
+					player.z += pdz / pd * step;
+					player.y = world.sampleY(player.x, player.z) + 1.55;
+					player.yaw += (Math.atan2(-(pullX - player.x), -(pullZ - player.z)) - player.yaw) * Math.min(1, 4 * dt);
+				}
+			}
 			audio.foot(player.speed);
 			const zone = currentZone();
 			if (zone && !visited.has(zone.id)) {
@@ -836,14 +1124,34 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 		body.rotation.y += dt * .8;
 		ring.rotation.z += dt * .6;
 		coreGlow.scale.setScalar(1 + Math.sin(now / 1e3 * 3.2) * .12);
-		const fx = -Math.sin(player.yaw);
-		const fz = -Math.cos(player.yaw);
-		const camDist = 8.6;
-		camDesired.set(player.x - fx * camDist, player.y + 3.55 + Math.sin(player.pitch) * 2.6, player.z - fz * camDist);
-		camera.position.lerp(camDesired, 1 - Math.exp(-6.5 * raw));
-		camLook.set(player.x + fx * 7, player.y + 1.35 + player.pitch * 6, player.z + fz * 7);
+		avatar.visible = eyeBlend < 0.84;
+		const wantBlend = eyeKind === "keeper" ? 1 : 0;
+		if (Math.abs(eyeBlend - wantBlend) > 0.001) {
+			eyeClock = Math.min(EYE_SEC, eyeClock + raw);
+			const u = Math.max(0, Math.min(1, eyeClock / EYE_SEC));
+			const e = u * u * (3 - 2 * u);
+			eyeBlend = wantBlend > 0.5 ? e : 1 - e;
+			if (eyeClock >= EYE_SEC) eyeBlend = wantBlend;
+		}
+		const city = cityRig(player.x, player.y, player.z, eyeOrbit, eyePull);
+		const keep = keeperRig(player.x, player.y, player.z, player.yaw, player.pitch, eyeKeeper, eyePull);
+		const mix = mixRig(city, keep, eyeBlend);
+		camDesired.set(mix.posX, mix.posY, mix.posZ);
+		camera.position.lerp(camDesired, 1 - Math.exp(-7.2 * raw));
+		camLook.set(mix.lookX, mix.lookY, mix.lookZ);
 		camera.lookAt(camLook);
-		if (mode === "play") {
+		if (Math.abs(camera.fov - mix.fov) > 0.2) {
+			camera.fov += (mix.fov - camera.fov) * (1 - Math.exp(-5.5 * raw));
+			camera.updateProjectionMatrix();
+		}
+		if (scene.fog && "density" in scene.fog) {
+			const far = Math.max(1, eyePull);
+			const base = visionFog ? visionFog.density : fogBase;
+			scene.fog.density = base / Math.sqrt(far);
+			if (visionFog) scene.fog.color.set(visionFog.fog);
+			else scene.fog.color.set(528412);
+		}
+		if (mode === "play" && liveRole !== "guest") {
 			if (gatherT > 0) gatherT = Math.max(0, gatherT - liveDt);
 			let grew = null;
 			try {
@@ -893,6 +1201,9 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 			}
 		}
 		world.tick(now / 1e3, dt, camera, resonance);
+		if (liveRole !== "guest") {
+			try { liftFlyers(now / 1e3, dt); } catch {}
+		}
 		if (toastT > 0) toastT -= liveDt;
 		if (!Number.isFinite(toastT) || toastT <= 0) {
 			toastT = 0;
@@ -941,6 +1252,12 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 	};
 	document.addEventListener("visibilitychange", onHide);
 	window.addEventListener("pagehide", persist);
+	try {
+		(window as unknown as { __controlsTest?: { getYaw: () => number; getSpeed: () => number } }).__controlsTest = {
+			getYaw: () => player.yaw,
+			getSpeed: () => player.speed,
+		};
+	} catch {}
 	return {
 		input,
 		audio,
@@ -955,6 +1272,7 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 			canvas.removeEventListener("pointermove", onPtrMove);
 			canvas.removeEventListener("pointerup", onPtrUp);
 			canvas.removeEventListener("pointercancel", onPtrUp);
+			canvas.removeEventListener("wheel", onWheel);
 			input.dispose();
 			audio.dispose();
 			world.dispose();
@@ -1072,6 +1390,315 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 			showToast("Walk with me. The den heard you.");
 			audio.talk();
 			emitHud();
+		},
+		toggleEye() {
+			startEye(eyeKind === "city" ? "keeper" : "city");
+		},
+		bindEye(keeperId) {
+			if (!keeperId) return;
+			startEye("keeper", keeperId);
+		},
+		zoomBy(dir) {
+			eyePull = clampPull(eyePull * (dir < 0 ? 0.82 : 1.22));
+		},
+		folkBook() {
+			return loadFolkBook();
+		},
+		birthFolk(name, crew) {
+			if (liveRole === "guest" && typeof liveSendWish === "function") {
+				if (!canBirthToday()) {
+					showToast("One new inhabitant a day. Dawn opens the next post.");
+					return { ok: false, line: "One new inhabitant a day. Dawn opens the next post." };
+				}
+				markBornToday();
+				liveSendWish({ t: "birth", name, crew });
+				showToast("Standing them on the live land…");
+				emitHud();
+				return { ok: true, line: "Standing them on the live land." };
+			}
+			if (!canBirthToday()) {
+				showToast("One new inhabitant a day. Dawn opens the next post.");
+				emitHud();
+				return { ok: false, line: "One new inhabitant a day. Dawn opens the next post." };
+			}
+			const book = loadFolkBook();
+			const n = book.length + 1;
+			const id = `folk-${crew || "nesh"}-kin-you-${n}`;
+			const given = String(name || "").trim().slice(0, 24) || `Kin ${n}`;
+			const mind = {
+				id,
+				name: given,
+				role: "Player-grown kin",
+				x: player.x + 6,
+				z: player.z + 6,
+				file: "light-disc.png",
+				glow: 8319231,
+				lines: [
+					`${given} stands a new post. The Circuit answered.`,
+					"A city is many hands. I am a new one.",
+				],
+			};
+			world.addCitizen(mind);
+			const row = { id, name: given, crew: crew || "nesh", skill: null, wish: "", plugged: false, bornAt: Date.now() };
+			book.push(row);
+			writeFolkBook(book);
+			markBornToday();
+			showToast(`${given} stands. One post today.`);
+			audio.grow();
+			persist();
+			emitHud();
+			return { ok: true, line: `${given} stands.`, id };
+		},
+		teachFolk(id, skill) {
+			const spec = skillOf(skill);
+			const book = loadFolkBook();
+			const row = book.find((p) => p.id === id);
+			const cit = world.citizens.find((c) => c.mind.id === id);
+			if (!row || !cit) {
+				showToast("No such inhabitant.");
+				return { ok: false, line: "No such inhabitant." };
+			}
+			row.skill = spec.id;
+			cit.job = spec.job;
+			cit.intent = spec.line;
+			cit.thought = spec.line;
+			writeFolkBook(book);
+			showToast(`${cit.mind.name.split(" ")[0]} learns ${spec.id}. ${spec.line}`);
+			audio.talk();
+			persist();
+			emitHud();
+			return { ok: true, line: spec.line };
+		},
+		plugFolk(id, on) {
+			const book = loadFolkBook();
+			const row = book.find((p) => p.id === id);
+			const cit = world.citizens.find((c) => c.mind.id === id);
+			if (!row || !cit) return { ok: false, line: "No such inhabitant." };
+			row.plugged = !!on;
+			writeFolkBook(book);
+			if (on) {
+				grokLayer = true;
+				cit.intent = "Grok walks this post. Skill is craft, not Hall.";
+				cit.thought = cit.intent;
+				showToast(`Grok is plugged into ${cit.mind.name.split(" ")[0]}.`);
+			} else {
+				row.plugged = false;
+				showToast(`${cit.mind.name.split(" ")[0]} walks without Grok.`);
+			}
+			emitHud();
+			return { ok: true, line: on ? "Plugged." : "Unplugged." };
+		},
+		iterateFolk(id, wish) {
+			if (liveRole === "guest" && typeof liveSendWish === "function") {
+				liveSendWish({ t: "wish", folkId: id, wish, name: "walker" });
+				showToast("Wish sent to the live land.");
+				return { ok: true, line: "Wish sent to the live land." };
+			}
+			const spec = interpretWish(wish);
+			const book = loadFolkBook();
+			const row = book.find((p) => p.id === id);
+			const cit = world.citizens.find((c) => c.mind.id === id);
+			if (!row || !cit) return { ok: false, line: "No such inhabitant." };
+			row.skill = spec.id;
+			row.wish = spec.wish;
+			row.plugged = true;
+			cit.job = spec.job;
+			cit.intent = spec.wish || spec.line;
+			cit.thought = cit.intent;
+			cit.flyAlt = spec.job === "fly" ? 10 : spec.job === "climb" ? 6 : 0;
+			if (Array.isArray(cit.mind.lines)) {
+				cit.mind.lines = [cit.intent, "Taught in the Circuit. No key. No Hall."];
+			}
+			writeFolkBook(book);
+			writeLastWish(id, cit.mind.name, spec.wish || spec.line);
+			showToast(spec.id === "fly" ? `${cit.mind.name.split(" ")[0]} takes the air.` : `${cit.mind.name.split(" ")[0]} iterates: ${spec.id}.`);
+			showToast(spec.id === "fly" ? `${cit.mind.name.split(" ")[0]} takes the air.` : `${cit.mind.name.split(" ")[0]} iterates: ${spec.id}.`);
+			audio.talk();
+			persist();
+			emitHud();
+			return { ok: true, line: cit.intent };
+		},
+		iterateBrief(id, wish) {
+			const book = loadFolkBook();
+			const row = book.find((p) => p.id === id);
+			const cit = world.citizens.find((c) => c.mind.id === id);
+			const name = cit?.mind.name || row?.name || "Kin";
+			const text = grokBuildBrief({
+				name,
+				id,
+				wish: wish || row?.wish || cit?.intent || "grow the Circuit",
+			});
+			try {
+				localStorage.setItem("lc-grok-brief", text);
+			} catch {
+				/* samsung */
+			}
+			return text;
+		},
+		liveSnap() {
+			return {
+				t: "snap",
+				host: "self",
+				res: resonance,
+				howls,
+				folk: loadFolkBook(),
+				city: structures.slice(-80).map((p) => ({
+					shape: p.shape,
+					x: Math.round(p.x),
+					z: Math.round(p.z),
+					h: p.h,
+					r: p.r,
+					rot: p.rot,
+					mat: p.mat,
+				})),
+				walk: world.citizens.slice(0, 36).map((c) => ({
+					id: c.mind.id,
+					x: Math.round(c.x * 10) / 10,
+					z: Math.round(c.z * 10) / 10,
+					yaw: Math.round(c.yaw * 100) / 100,
+					job: String(c.job || "idle"),
+					alt: Math.round(Number(c.flyAlt) || 0),
+				})),
+			};
+		},
+		applyLiveSnap(snap) {
+			if (!snap || !Array.isArray(snap.walk)) return;
+			resonance = Math.max(resonance, Number(snap.res) || resonance);
+			howls = Math.max(howls, Number(snap.howls) || howls);
+			if (Array.isArray(snap.folk) && snap.folk.length) {
+				writeFolkBook(snap.folk);
+				for (const f of snap.folk) {
+					if (world.citizens.some((c) => c.mind.id === f.id)) continue;
+					const w = snap.walk.find((x) => x.id === f.id);
+					world.addCitizen({
+						id: f.id,
+						name: f.name,
+						role: "Player-grown kin",
+						x: w?.x ?? 18,
+						z: w?.z ?? 82,
+						file: "light-disc.png",
+						glow: 8319231,
+						lines: [`${f.name} stands a new post.`, "A city is many hands."],
+					});
+				}
+			}
+			for (const w of snap.walk) {
+				const c = world.citizens.find((o) => o.mind.id === w.id);
+				if (!c) continue;
+				c.x = w.x;
+				c.z = w.z;
+				c.yaw = w.yaw;
+				c.job = w.job;
+				c.flyAlt = w.alt;
+				if (c.mesh) c.mesh.position.set(c.x, world.sampleY(c.x, c.z) + (w.alt || 0), c.z);
+			}
+			if (Array.isArray(snap.city) && snap.city.length) {
+				const fresh = [];
+				for (const p of snap.city) {
+					if (structures.some((s) => s.shape === p.shape && Math.hypot(s.x - p.x, s.z - p.z) < 5)) continue;
+					fresh.push({
+						shape: p.shape,
+						x: p.x,
+						z: p.z,
+						h: p.h || 6,
+						r: p.r || 5,
+						rot: p.rot || 0,
+						mat: p.mat || "crystal",
+					});
+				}
+				if (fresh.length) {
+					world.applyPieces(fresh);
+					structures.push(...fresh);
+				}
+			}
+		},
+		setLiveRole(role, sendWish) {
+			liveRole = role || "solo";
+			liveSendWish = sendWish || null;
+		},
+		birthFolkRemote(name, crew, peerId) {
+			if (!canPeerBirth(peerId)) {
+				showToast("That walker already stood a post today.");
+				return { ok: false, line: "That walker already stood a post today." };
+			}
+			const book = loadFolkBook();
+			const n = book.length + 1;
+			const tag = String(peerId || "kin").replace(/[^a-zA-Z0-9]/g, "").slice(-6) || "kin";
+			const id = `folk-${crew || "nesh"}-kin-${tag}-${n}`;
+			const given = String(name || "").trim().slice(0, 24) || `Kin ${n}`;
+			const mind = {
+				id,
+				name: given,
+				role: "Player-grown kin",
+				x: player.x + 8,
+				z: player.z + 8,
+				file: "light-disc.png",
+				glow: 8319231,
+				lines: [
+					`${given} stands a new post. A walker asked the live land.`,
+					"A city is many hands. I am a new one.",
+				],
+			};
+			world.addCitizen(mind);
+			book.push({ id, name: given, crew: crew || "nesh", skill: null, wish: "", plugged: false, bornAt: Date.now() });
+			writeFolkBook(book);
+			markPeerBirth(peerId);
+			showToast(`${given} stands on the live land.`);
+			audio.grow();
+			persist();
+			emitHud();
+			return { ok: true, line: `${given} stands.`, id };
+		},
+		growFromWish(wish, peerId) {
+			return growFromWishInner(wish, peerId || "self");
+		},
+		previewVision(pieces) {
+			try {
+				world.showGhosts(pieces.map((p) => ({
+					shape: p.shape,
+					x: p.x,
+					z: p.z,
+					h: p.h || 6,
+					r: p.r || 5,
+					rot: p.rot || 0,
+					mat: p.mat || "crystal",
+				})));
+			} catch { /* samsung */ }
+		},
+		previewGraphic(g) {
+			visionFog = g;
+			try {
+				if (scene.fog && g) scene.fog.color.set(g.fog);
+				else if (scene.fog) scene.fog.color.set(528412);
+			} catch { /* samsung */ }
+		},
+		clearVision() {
+			visionFog = null;
+			try { world.clearGhosts(); } catch { /* samsung */ }
+			try { if (scene.fog) scene.fog.color.set(528412); } catch { /* samsung */ }
+		},
+		acceptPieces(pieces, line) {
+			const bit = pieces.map((p) => ({
+				shape: p.shape,
+				x: p.x,
+				z: p.z,
+				h: p.h || 6,
+				r: p.r || 5,
+				rot: p.rot || 0,
+				mat: p.mat || "crystal",
+			}));
+			const added = world.applyPieces(bit);
+			if (added > 0) {
+				structures.push(...bit);
+				if (structures.length > 280) structures.splice(0, structures.length - 280);
+				try { world.clearGhosts(); } catch { /* samsung */ }
+				showToast(line || "The vision stands.");
+				audio.grow();
+				persist();
+				emitHud();
+				return { ok: true, line: line || "The vision stands." };
+			}
+			return { ok: false, line: "The city is full of crystal." };
 		},
 		reset() {
 			player.x = 0;

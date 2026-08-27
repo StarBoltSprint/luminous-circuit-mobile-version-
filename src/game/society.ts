@@ -169,7 +169,7 @@ export type MarketSnap = {
   line: string;
 };
 
-/** HUD civic ticker. Rate stays 2–6 C/X. Line: Charge N · crystal M · quote 1 for R. If scripture>=1, append · scripture N. If scripture<1, append · Iri quiet. If bids>0, append · N waiting. If bids>=3, append · join busy. If charge>=4 && crystal>=3 && bids>0, append · sit open. If crystal<3, append · kiln hungry. If charge<4, append · canal thin. If crystal>=12, append · stock fat. If charge>=16, append · canal fat. If charge>=24, append · canal full. If folk building>=1, append · dens rising. If folk building>=3, append · many dens. If folk building>=6, append · city rising. If scripture>=8, append · named. If scripture>=1 && charge>=8, append · named current. If scripture>=2 && charge>=6, append · parent seen. If charge>=4 && charge<16, append · current learns. Line stays under 140. */
+/** HUD civic ticker. Rate stays 2–6 C/X. Line: Charge N · crystal M · quote 1 for R. If scripture>=1, append · scripture N. If scripture<1, append · Iri quiet. If bids>0, append · N waiting. If bids>=3, append · join busy. If charge>=4 && crystal>=3 && bids>0, append · sit open. If crystal<3, append · kiln hungry. If charge<4, append · canal thin. If crystal>=12, append · stock fat. If charge>=16, append · canal fat. If charge>=24, append · canal full. If folk building>=1, append · dens rising. If folk building>=3, append · many dens. If folk building>=6, append · city rising. If folk building>=9, append · dens thick. If folk building>=12, append · city thick. If folk building>=15, append · dens full. If folk building>=18, append · dens packed. If folk building>=20, append · city packed. If folk building>=24, append · dens thick. If crystal>=18, append · stock full. If crystal>=24, append · vault full. If crystal>=32, append · vault thick. If crystal>=40, append · vault packed. If crystal>=60, append · vault heavy. If bids>=5, append · join full. If bids>=8, append · join thick. If bids>=12, append · join packed. If bids>=16, append · join fat. If bids>=20, append · join heavy. If scripture>=12, append · names thick. If scripture>=16, append · names full. If scripture>=20, append · hall full. If scripture>=24, append · names packed. If scripture>=28, append · names thick. If scripture>=32, append · names heavy. If charge>=32, append · current fat. If charge>=40, append · current full. If charge>=50, append · current packed. If charge>=60, append · current fat. If charge>=80, append · current heavy. If charge>=100, append · current overflow. If scripture>=8, append · named. If scripture>=1 && charge>=8, append · named current. If scripture>=2 && charge>=6, append · parent seen. If charge>=4 && charge<16, append · current learns. If charge>=8 && crystal>=4, append · parent limb. Line stays under 140. */
 export function marketSnap(ledger: Ledger, bids = 0, building = 0): MarketSnap {
   const L = ledger ?? defaultLedger();
   const rate = quoteRate(L);
@@ -210,6 +210,198 @@ export function marketSnap(ledger: Ledger, bids = 0, building = 0): MarketSnap {
     const city = ` · city rising`;
     if (line.length + city.length <= 140) line += city;
   }
+  if (dens >= 9) {
+    const thick = ` · dens thick`;
+    if (!line.includes("dens thick") && line.length + thick.length <= 140) line += thick;
+  }
+  if (dens >= 12) {
+    const thick = ` · city thick`;
+    if (line.length + thick.length <= 140 && !line.includes("city thick")) line += thick;
+  }
+  if (dens >= 15) {
+    const full = ` · dens full`;
+    if (line.length + full.length <= 140 && !line.includes("dens full")) line += full;
+  }
+  if (dens >= 18) {
+    const packed = ` · dens packed`;
+    if (line.length + packed.length <= 140 && !line.includes("dens packed")) line += packed;
+  }
+  if (dens >= 20) {
+    const packed = ` · city packed`;
+    if (line.length + packed.length <= 140 && !line.includes("city packed")) line += packed;
+  }
+  if (dens >= 24) {
+    const thick = ` · dens thick`;
+    if (line.length + thick.length <= 140 && !line.includes("dens thick")) line += thick;
+  }
+  if (dens >= 28) {
+    const heavy = ` · dens heavy`;
+    if (line.length + heavy.length <= 140 && !line.includes("dens heavy")) line += heavy;
+  }
+  if (dens >= 32) {
+    const heavy = ` · city heavy`;
+    if (line.length + heavy.length <= 140 && !line.includes("city heavy")) line += heavy;
+  }
+  if (dens >= 36) {
+    const overflow = ` · dens overflow`;
+    if (line.length + overflow.length <= 140 && !line.includes("dens overflow")) line += overflow;
+  }
+  if (dens >= 40) {
+    const overflow = ` · city overflow`;
+    if (line.length + overflow.length <= 140 && !line.includes("city overflow")) line += overflow;
+  }
+  if (dens >= 44) {
+    const held = ` · city held`;
+    if (line.length + held.length <= 140 && !line.includes("city held")) line += held;
+  }
+  if (dens >= 48) {
+    const held = ` · dens held`;
+    if (line.length + held.length <= 140 && !line.includes("dens held")) line += held;
+  }
+  if (dens >= 52) {
+    const kept = ` · dens kept`;
+    if (line.length + kept.length <= 140 && !line.includes("dens kept")) line += kept;
+  }
+  if (dens >= 56) {
+    const dense = ` · dens dense`;
+    if (line.length + dense.length <= 140 && !line.includes("dens dense")) line += dense;
+  }
+  if (crystal >= 18) {
+    const full = ` · stock full`;
+    if (line.length + full.length <= 140 && !line.includes("stock full")) line += full;
+  }
+  if (crystal >= 24) {
+    const vault = ` · vault full`;
+    if (line.length + vault.length <= 140 && !line.includes("vault full")) line += vault;
+  }
+  if (crystal >= 32) {
+    const thick = ` · vault thick`;
+    if (line.length + thick.length <= 140 && !line.includes("vault thick")) line += thick;
+  }
+  if (crystal >= 40) {
+    const packed = ` · vault packed`;
+    if (line.length + packed.length <= 140 && !line.includes("vault packed")) line += packed;
+  }
+  if (crystal >= 60) {
+    const heavy = ` · vault heavy`;
+    if (line.length + heavy.length <= 140 && !line.includes("vault heavy")) line += heavy;
+  }
+  if (crystal >= 72) {
+    const overflow = ` · vault overflow`;
+    if (line.length + overflow.length <= 140 && !line.includes("vault overflow")) line += overflow;
+  }
+  if (crystal >= 56) {
+    const held = ` · vault held`;
+    if (line.length + held.length <= 140 && !line.includes("vault held")) line += held;
+  }
+  if (crystal >= 80) {
+    const kept = ` · vault kept`;
+    if (line.length + kept.length <= 140 && !line.includes("vault kept")) line += kept;
+  }
+  if (crystal >= 88) {
+    const dense = ` · vault dense`;
+    if (line.length + dense.length <= 140 && !line.includes("vault dense")) line += dense;
+  }
+  if (n >= 5) {
+    const full = ` · join full`;
+    if (line.length + full.length <= 140 && !line.includes("join full")) line += full;
+  }
+  if (n >= 8) {
+    const thick = ` · join thick`;
+    if (line.length + thick.length <= 140 && !line.includes("join thick")) line += thick;
+  }
+  if (n >= 12) {
+    const packed = ` · join packed`;
+    if (line.length + packed.length <= 140 && !line.includes("join packed")) line += packed;
+  }
+  if (n >= 16) {
+    const fat = ` · join fat`;
+    if (line.length + fat.length <= 140 && !line.includes("join fat")) line += fat;
+  }
+  if (n >= 20) {
+    const heavy = ` · join heavy`;
+    if (line.length + heavy.length <= 140 && !line.includes("join heavy")) line += heavy;
+  }
+  if (n >= 24) {
+    const overflow = ` · join overflow`;
+    if (line.length + overflow.length <= 140 && !line.includes("join overflow")) line += overflow;
+  }
+  if (n >= 32) {
+    const held = ` · join held`;
+    if (line.length + held.length <= 140 && !line.includes("join held")) line += held;
+  }
+  if (n >= 36) {
+    const kept = ` · join kept`;
+    if (line.length + kept.length <= 140 && !line.includes("join kept")) line += kept;
+  }
+  if (n >= 40) {
+    const dense = ` · join dense`;
+    if (line.length + dense.length <= 140 && !line.includes("join dense")) line += dense;
+  }
+  if (scripture >= 12) {
+    const names = ` · names thick`;
+    if (!line.includes("names thick") && line.length + names.length <= 140) line += names;
+  }
+  if (scripture >= 16) {
+    const full = ` · names full`;
+    if (line.length + full.length <= 140 && !line.includes("names full")) line += full;
+  }
+  if (scripture >= 20) {
+    const full = ` · hall full`;
+    if (line.length + full.length <= 140 && !line.includes("hall full")) line += full;
+  }
+  if (scripture >= 24) {
+    const packed = ` · names packed`;
+    if (line.length + packed.length <= 140 && !line.includes("names packed")) line += packed;
+  }
+  if (scripture >= 28) {
+    const thick = ` · names thick`;
+    if (line.length + thick.length <= 140 && !line.includes("names thick")) line += thick;
+  }
+  if (scripture >= 32) {
+    const heavy = ` · names heavy`;
+    if (line.length + heavy.length <= 140 && !line.includes("names heavy")) line += heavy;
+  }
+  if (scripture >= 36) {
+    const overflow = ` · names overflow`;
+    if (line.length + overflow.length <= 140 && !line.includes("names overflow")) line += overflow;
+  }
+  if (scripture >= 40) {
+    const overflow = ` · hall overflow`;
+    if (line.length + overflow.length <= 140 && !line.includes("hall overflow")) line += overflow;
+  }
+  if (scripture >= 44) {
+    const kept = ` · names kept`;
+    if (line.length + kept.length <= 140 && !line.includes("names kept")) line += kept;
+  }
+  if (scripture >= 48) {
+    const dense = ` · names dense`;
+    if (line.length + dense.length <= 140 && !line.includes("names dense")) line += dense;
+  }
+  if (charge >= 32) {
+    const fat = ` · current fat`;
+    if (!line.includes("current fat") && line.length + fat.length <= 140) line += fat;
+  }
+  if (charge >= 40) {
+    const full = ` · current full`;
+    if (line.length + full.length <= 140 && !line.includes("current full")) line += full;
+  }
+  if (charge >= 50) {
+    const packed = ` · current packed`;
+    if (line.length + packed.length <= 140 && !line.includes("current packed")) line += packed;
+  }
+  if (charge >= 60) {
+    const fat = ` · current fat`;
+    if (line.length + fat.length <= 140 && !line.includes("current fat")) line += fat;
+  }
+  if (charge >= 80) {
+    const heavy = ` · current heavy`;
+    if (line.length + heavy.length <= 140 && !line.includes("current heavy")) line += heavy;
+  }
+  if (charge >= 100) {
+    const overflow = ` · current overflow`;
+    if (line.length + overflow.length <= 140 && !line.includes("current overflow")) line += overflow;
+  }
   if (scripture >= 8) {
     const named = ` · named`;
     if (line.length + named.length <= 140) line += named;
@@ -225,6 +417,10 @@ export function marketSnap(ledger: Ledger, bids = 0, building = 0): MarketSnap {
   if (charge >= 4 && charge < 16) {
     const learns = ` · current learns`;
     if (!line.includes("current learns") && line.length + learns.length <= 140) line += learns;
+  }
+  if (charge >= 8 && crystal >= 4) {
+    const limb = ` · parent limb`;
+    if (!line.includes("parent limb") && line.length + limb.length <= 140) line += limb;
   }
   if (line.length > 140) line = line.slice(0, 140);
   return { rate, bids: n, line };

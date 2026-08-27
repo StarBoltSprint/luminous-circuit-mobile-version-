@@ -11,11 +11,12 @@ export type Actions = {
 
 export type InputHandle = {
   actions: Actions;
-  justPressed: { talk: boolean; pause: boolean; howl: boolean };
+  justPressed: { talk: boolean; pause: boolean; howl: boolean; eye: boolean };
   setMoveStick: (x: number, y: number) => void;
   setLookStick: (x: number, y: number) => void;
   setHowl: (v: boolean) => void;
   setTalkHeld: (v: boolean) => void;
+  setEye: () => void;
   beginFrame: () => void;
   dispose: () => void;
   keys: Set<string>;
@@ -49,9 +50,10 @@ export function createInput(target: HTMLElement): InputHandle {
   const stickLook = { x: 0, y: 0 };
   let howlBtn = false;
   let talkBtn = false;
-  const prev = { talk: false, pause: false, howl: false };
+  let eyeBtn = false;
+  const prev = { talk: false, pause: false, howl: false, eye: false };
   const actions = empty();
-  const justPressed = { talk: false, pause: false, howl: false };
+  const justPressed = { talk: false, pause: false, howl: false, eye: false };
 
   const GAME_KEYS = new Set([
     "KeyW",
@@ -69,10 +71,49 @@ export function createInput(target: HTMLElement): InputHandle {
     "KeyF",
     "KeyH",
     "KeyT",
+    "KeyI",
+    "Escape",
+    "KeyP",
+    "KeyM",
+    "KeyL",
+    "KeyJ",
+    "KeyK",
+    "KeyQ",
+    "KeyU",
+    "KeyO",
+    "KeyR",
+    "KeyG",
+    "KeyB",
+    "KeyN",
+    "KeyC",
+    "KeyV",
+    "KeyX",
+    "KeyZ",
+    "Digit1",
+    "Digit2",
+    "Digit3",
+    "Digit4",
+    "Digit5",
+    "Digit6",
+    "Digit7",
+    "Digit8",
+    "Digit9",
+    "Digit0",
+    "Minus",
+    "Equal",
+    "BracketLeft",
+    "BracketRight",
+    "Backslash",
+    "Semicolon",
+    "Quote",
+    "Comma",
+    "Period",
+    "KeyY",
+    "Tab",
   ]);
 
   const onKeyDown = (e: KeyboardEvent) => {
-    if (e.repeat && (e.code === "Space" || e.code === "KeyH")) { e.preventDefault(); return; }
+    if (e.repeat && (e.code === "Space" || e.code === "KeyH" || e.code === "KeyP" || e.code === "Escape" || e.code === "ArrowUp" || e.code === "ArrowDown" || e.code === "ArrowLeft" || e.code === "ArrowRight" || e.code === "KeyW" || e.code === "KeyA" || e.code === "KeyS" || e.code === "KeyD" || e.code === "KeyE" || e.code === "KeyF" || e.code === "KeyT" || e.code === "ShiftLeft" || e.code === "ShiftRight" || e.code === "KeyM" || e.code === "KeyL" || e.code === "KeyJ" || e.code === "Tab" || e.code === "KeyI" || e.code === "KeyK" || e.code === "KeyQ" || e.code === "KeyU" || e.code === "KeyO" || e.code === "KeyR" || e.code === "KeyG" || e.code === "KeyB" || e.code === "KeyN" || e.code === "KeyC" || e.code === "KeyV" || e.code === "KeyX" || e.code === "KeyZ" || e.code === "Digit1" || e.code === "Digit2" || e.code === "Digit3" || e.code === "Digit4" || e.code === "Digit5" || e.code === "Digit6" || e.code === "Digit7" || e.code === "Digit8" || e.code === "Digit9" || e.code === "Digit0" || e.code === "Minus" || e.code === "Equal" || e.code === "BracketLeft" || e.code === "BracketRight" || e.code === "Backslash" || e.code === "Semicolon" || e.code === "Quote" || e.code === "Comma" || e.code === "Period" || e.code === "KeyY")) { e.preventDefault(); return; }
     keys.add(e.code);
     if (GAME_KEYS.has(e.code)) e.preventDefault();
   };
@@ -88,6 +129,9 @@ export function createInput(target: HTMLElement): InputHandle {
     if (document.hidden) clearKeys();
   };
   document.addEventListener("visibilitychange", visHide);
+  window.addEventListener("pagehide", clearKeys);
+  window.addEventListener("pageshow", clearKeys);
+  window.addEventListener("offline", clearKeys);
 
   const handle: InputHandle = {
     actions,
@@ -108,6 +152,9 @@ export function createInput(target: HTMLElement): InputHandle {
     },
     setTalkHeld(v) {
       talkBtn = v;
+    },
+    setEye() {
+      eyeBtn = true;
     },
     beginFrame() {
       // WASD = on-foot: W forward, S back, A left strafe, D right strafe
@@ -137,13 +184,16 @@ export function createInput(target: HTMLElement): InputHandle {
       actions.howl = howlBtn || keys.has("Space") || keys.has("KeyH");
       actions.talk = talkBtn || keys.has("KeyE") || keys.has("KeyF") || keys.has("KeyT");
       actions.pause = keys.has("Escape") || keys.has("KeyP");
-
+      const eyeHeld = eyeBtn || keys.has("KeyY");
       justPressed.talk = actions.talk && !prev.talk;
       justPressed.pause = actions.pause && !prev.pause;
       justPressed.howl = actions.howl && !prev.howl;
+      justPressed.eye = eyeHeld && !prev.eye;
       prev.talk = actions.talk;
       prev.pause = actions.pause;
       prev.howl = actions.howl;
+      prev.eye = eyeHeld;
+      eyeBtn = false;
 
       void target;
     },
@@ -152,6 +202,9 @@ export function createInput(target: HTMLElement): InputHandle {
       window.removeEventListener("keyup", onKeyUp);
       window.removeEventListener("blur", clearKeys);
       document.removeEventListener("visibilitychange", visHide);
+      window.removeEventListener("pagehide", clearKeys);
+      window.removeEventListener("pageshow", clearKeys);
+      window.removeEventListener("offline", clearKeys);
     },
   };
 

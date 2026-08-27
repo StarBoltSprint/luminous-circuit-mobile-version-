@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiRtcRouteImport } from './routes/api/rtc'
+import { Route as ApiVisionsRouteImport } from './routes/api/visions'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiRtcRoute = ApiRtcRouteImport.update({
+  id: '/api/rtc',
+  path: '/api/rtc',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVisionsRoute = ApiVisionsRouteImport.update({
+  id: '/api/visions',
+  path: '/api/visions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/rtc': typeof ApiRtcRoute
+  '/api/visions': typeof ApiVisionsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/rtc': typeof ApiRtcRoute
+  '/api/visions': typeof ApiVisionsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/rtc': typeof ApiRtcRoute
+  '/api/visions': typeof ApiVisionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/api/rtc' | '/api/visions'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/api/rtc' | '/api/visions'
+  id: '__root__' | '/' | '/api/rtc' | '/api/visions'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiRtcRoute: typeof ApiRtcRoute
+  ApiVisionsRoute: typeof ApiVisionsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/rtc': {
+      id: '/api/rtc'
+      path: '/api/rtc'
+      fullPath: '/api/rtc'
+      preLoaderRoute: typeof ApiRtcRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/visions': {
+      id: '/api/visions'
+      path: '/api/visions'
+      fullPath: '/api/visions'
+      preLoaderRoute: typeof ApiVisionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiRtcRoute: ApiRtcRoute,
+  ApiVisionsRoute: ApiVisionsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

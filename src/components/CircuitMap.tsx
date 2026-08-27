@@ -150,7 +150,7 @@ function inWard(x: number, z: number, d: District) {
   return Math.hypot(x - d.x, z - d.z) <= d.radius + 36;
 }
 function isRaiseShape(shape: string) {
-  return shape === "kiln" || shape === "grove" || shape === "bridge" || shape === "arch" || shape === "beacon" || shape === "vein" || shape === "disc" || shape === "cascade" || shape === "weir";
+  return shape === "kiln" || shape === "grove" || shape === "bridge" || shape === "arch" || shape === "beacon" || shape === "vein" || shape === "disc" || shape === "cascade" || shape === "weir" || shape === "font" || shape === "cradle" || shape === "tablet" || shape === "stele" || shape === "orbit" || shape === "veil" || shape === "lens" || shape === "bough" || shape === "lamp" || shape === "pad" || shape === "inlay" || shape === "hearth" || shape === "terrace" || shape === "spire" || shape === "ring" || shape === "well" || shape === "mosaic" || shape === "canal" || shape === "bell" || shape === "anvil" || shape === "forge" || shape === "sluice" || shape === "prism" || shape === "grate" || shape === "chimney" || shape === "basin" || shape === "dais" || shape === "post" || shape === "cairn" || shape === "slab" || shape === "stone" || shape === "ledge" || shape === "notch" || shape === "rib" || shape === "lintel" || shape === "pier" || shape === "stall";
 }
 function isGrowJob(job: string) {
   const j = job.toLowerCase();
@@ -302,7 +302,7 @@ function BuildMark({ x, y, shape, s = 1 }: { x: number; y: number; shape: string
     return withRaise(shape, x, y, s, <circle cx={x} cy={y} r={3.6 * s} className="map-gold" opacity={0.7} />);
   }
   if (shape === "bough") return <circle cx={x} cy={y} r={3.6 * s} className="map-gold" opacity={0.7} />;
-  if (shape === "tablet" || shape === "stele") return <rect x={x - 1.2 * s} y={y - 5 * s} width={2.4 * s} height={9 * s} rx={0.4} className="fill-gold" />;
+  if (shape === "tablet" || shape === "stele") return withRaise(shape, x, y, s, <rect x={x - 1.2 * s} y={y - 5 * s} width={2.4 * s} height={9 * s} rx={0.4} className="fill-gold" />);
   if (shape === "beacon") {
     return withRaise(shape, x, y, s, <polygon points={`${x},${y - 7 * s} ${x + 2.4 * s},${y + 3 * s} ${x - 2.4 * s},${y + 3 * s}`} className="map-gold" />);
   }
@@ -378,7 +378,8 @@ function WardGlyph({ d, x, y, r }: { d: District; x: number; y: number; r: numbe
 
 function YouMark({ x, y, label = true }: { x: number; y: number; label?: boolean }) {
   return (
-    <g>
+    <g aria-label="You">
+      <title>You</title>
       <circle cx={x} cy={y} r="16" className="map-you-halo" />
       <circle cx={x} cy={y} r="11" className="map-you-ring" />
       <circle cx={x} cy={y} r="11" className="map-you-ring map-you-ring-late" />
@@ -439,13 +440,13 @@ export function CircuitMap({
   }, []);
 
   return (
-    <div className="sheet map-sheet absolute inset-0 z-40 flex flex-col bg-bg hud-safe">
+    <div className="sheet map-sheet absolute inset-0 z-40 flex flex-col bg-bg hud-safe" role="dialog" aria-modal="true" aria-label="Circuit map">
       <header className="sheet-head pointer-events-auto">
         <div>
           <p className="sheet-kicker">Living circuit{prettyLast(hud.lastCode) ? ` · last ${prettyLast(hud.lastCode)}` : ""}</p>
           <h3 className="sheet-title">Circuit map</h3>
         </div>
-        <button type="button" className="map-close min-h-11" aria-label="Close map" onClick={onClose}>
+        <button type="button" className="map-close min-h-11" aria-label="Close map" title="Close map" onClick={onClose}>
           ×
         </button>
       </header>
@@ -610,7 +611,7 @@ export function CircuitMap({
         </svg>
         <p className="map-hint">Tap a ward.{prettyLast(hud.lastCode) ? ` Last ${prettyLast(hud.lastCode)}.` : ""}</p>
       </div>
-      <div className="sheet-legend map-legend-float pointer-events-none">
+      <div className="sheet-legend map-legend-float pointer-events-none" role="list" aria-label="Circuit legend">
         <span className="map-legend-item"><i className="map-legend-swatch map-legend-you" />You</span>
         <span className="map-legend-item"><i className="map-legend-swatch map-legend-keeper" />Keeper</span>
         <span className="map-legend-item"><i className="map-legend-swatch map-legend-folk" />Folk</span>
@@ -713,13 +714,13 @@ function ZoneSheet({
   ).sort((a, b) => b[1] - a[1]);
 
   return (
-    <div className="sheet zone-sheet absolute inset-0 z-50 flex flex-col bg-bg hud-safe">
+    <div className="sheet zone-sheet absolute inset-0 z-50 flex flex-col bg-bg hud-safe" role="dialog" aria-modal="true" aria-label="Ward map">
       <header className="sheet-head pointer-events-auto">
         <div>
           <p className="sheet-kicker">{keeperName(d.keeper)} · {d.duty}{growingNow ? " · raising" : ""}</p>
           <h3 className="sheet-title">{shortLabel(d)}</h3>
         </div>
-        <button type="button" className="hud-chip min-h-11 px-3 zone-close" aria-label="Close" onClick={onClose}>
+        <button type="button" className="hud-chip min-h-11 px-3 zone-close" aria-label="Close ward" title="Close ward" onClick={onClose}>
           Close
         </button>
       </header>

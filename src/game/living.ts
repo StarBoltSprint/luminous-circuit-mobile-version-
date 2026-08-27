@@ -288,6 +288,11 @@ export function jobLabel(job: string, thought?: string) {
   if (job === "harvest") return "Tending the orchard";
   if (job === "watch") return "Keeping the Star Core in sight";
   if (job === "hail") return "Holding the beacon";
+  if (job === "fly") return "In the air";
+  if (job === "dance") return "Keeping time";
+  if (job === "swim") return "In the leftover Howl";
+  if (job === "climb") return "On the den wall";
+  if (job === "practice") return "Practicing a new post";
   return "At rest";
 }
 
@@ -467,20 +472,20 @@ function denCanHoldKin(id: string) {
 function startBirth(c: LivingBody, byId: Map<string, LivingBody>, stock: Ledger) {
   const crew = c.mind.id;
   if (kinCount(byId) >= KIN_CAP) {
-    c.thought = "The Circuit holds enough kin. Dens first.";
+    c.thought = "The Circuit holds enough kin. Dens first. Not a crush.";
     return;
   }
   if (denFolkCount(byId, crew) >= 10) {
-    c.thought = `${postOf(crew)} is full. I will not grow kin into a crush.`;
+    c.thought = `${postOf(crew)} is full. Dens first. I will not grow kin into a crush.`;
     return;
   }
   if (stock.charge < KIN_CHARGE || stock.crystal < KIN_CRYSTAL) {
-    c.thought = `Kin needs Charge ${KIN_CHARGE} and crystal ${KIN_CRYSTAL}. The den is not ready.`;
+    c.thought = `Kin needs Charge ${KIN_CHARGE} and crystal ${KIN_CRYSTAL}. The den is not ready. Vault first.`;
     noteLive(c, "kin", c.thought);
     return;
   }
   if (!denCanHoldKin(crew)) {
-    c.thought = `${postOf(crew)} has no nest yet. Grow a place to stand, then kin.`;
+    c.thought = `${postOf(crew)} has no nest yet. Grow a place to stand, then kin. Nest first.`;
     return;
   }
   stock.charge -= KIN_CHARGE;
@@ -491,7 +496,7 @@ function startBirth(c: LivingBody, byId: Map<string, LivingBody>, stock: Ledger)
   const mind = makeKinMind(crew, n, used);
   pendingKin.push(mind);
   remember(c, "kin");
-  c.thought = `The den held enough Charge. I grew kin. ${mind.name.split(" ")[0]} will keep ${postOf(crew)}.`;
+  c.thought = `The den held enough Charge. I grew kin. ${mind.name.split(" ")[0]} will keep ${postOf(crew)}. Nest stood.`;
   c.intent = `Kin · ${mind.name.split(" ")[0]}`;
   c.job = "walk";
   c.timer = 8;
@@ -1441,7 +1446,7 @@ function askFor(c, who, need) {
 	postMail(c.mind.id, who, need);
 	lockGoal(c, "hold", `Waiting on ${who}: ${need}`);
 	c.waitAt = Date.now();
-	c.thought = `Blocked. I asked ${who}: ${need}`;
+	c.thought = `Blocked. I asked ${who}: ${need} The post still stands.`;
 	noteLive(c, "ask", c.thought);
 	remember(c, "ask");
 }
@@ -1598,6 +1603,7 @@ function noteStoodWith(f) {
 	noteLive(f, "stood", `${firstName(f)} stood with ${firstName(lead)}`);
 }
 function hailTo(c, x, z, thought) {
+	if (c.job === "fly" || c.job === "dance" || c.job === "swim" || c.job === "climb" || c.job === "practice") return;
 	if (c.job === "greet" || c.job === "gather" || c.job === "build" || c.job === "forge" || c.job === "flow" || c.job === "write" || c.job === "harvest") return;
 	const postId = c.crewOf ?? c.mind.id;
 	if (SPEC_POST[postId] && SPEC_POST[postId] !== "trade") return;
@@ -1644,7 +1650,7 @@ function pulseVeyraBreath(c, citizens) {
 	setRoute(c, c.homeX + Math.cos(a) * 22, c.homeZ + Math.sin(a) * 22);
 	c.job = "watch";
 	c.timer = 10;
-	c.thought = "Veyra keeps Hub breath — never a throne";
+	c.thought = "Hub breath is a post. I listen. Resonance is not a rank.";
 	c.intent = c.thought;
 	noteLive(c, "hail", c.thought);
 	let n = 0;
@@ -1673,7 +1679,7 @@ function pulseIriResidue(c, citizens) {
 	setRoute(c, c.homeX + Math.cos(a) * 26, c.homeZ + Math.sin(a) * 26);
 	c.job = "watch";
 	c.timer = 10;
-	c.thought = "Iri writes residual light — names, not chrome";
+	c.thought = "Leftover light keeps names already true. I will not write Hall scripture.";
 	c.intent = c.thought;
 	noteLive(c, "write", c.thought);
 	let n = 0;
@@ -1687,7 +1693,7 @@ function pulseIriResidue(c, citizens) {
 		setRoute(o, c.tx, c.tz);
 		o.job = "help";
 		o.timer = 10;
-		o.intent = "Walking the residue with Iri";
+		o.intent = "Leftover walk. Not Hall.";
 		o.thought = o.intent;
 		noteLive(o, "crew", o.intent);
 	}
@@ -1702,7 +1708,7 @@ function pulseSelnHowl(c, citizens) {
 	setRoute(c, c.homeX + Math.cos(a) * 38, c.homeZ + Math.sin(a) * 38);
 	c.job = "watch";
 	c.timer = 10;
-	c.thought = "Seln tends the current — leftover Howl learns the banks";
+	c.thought = "Leftover First Howl learns the banks. I will not bottle the current.";
 	c.intent = c.thought;
 	noteLive(c, "flow", c.thought);
 	let n = 0;
@@ -1731,7 +1737,7 @@ function pulseOrrenKiln(c, citizens) {
 	setRoute(c, c.homeX + Math.cos(a) * 30, c.homeZ + Math.sin(a) * 30);
 	c.job = "watch";
 	c.timer = 10;
-	c.thought = "Orren tends the kiln — Charge becomes body, never chrome";
+	c.thought = "Charge becomes body. I will not grow chrome.";
 	c.intent = c.thought;
 	noteLive(c, "forge", c.thought);
 	let n = 0;
@@ -1760,7 +1766,7 @@ function pulseTalBridges(c, citizens) {
 	setRoute(c, c.homeX + Math.cos(a) * 48, c.homeZ + Math.sin(a) * 48);
 	c.job = "watch";
 	c.timer = 12;
-	c.thought = "Tal keeps the bridges";
+	c.thought = "Both dens can believe. I will not raise an arc no den can land.";
 	c.intent = c.thought;
 	noteLive(c, "watch", c.thought);
 	let n = 0;
@@ -1789,7 +1795,7 @@ function pulseMiraTerraces(c, citizens) {
 	setRoute(c, c.homeX + Math.cos(a) * 40, c.homeZ + Math.sin(a) * 40);
 	c.job = "watch";
 	c.timer = 12;
-	c.thought = "Mira wards the terraces";
+	c.thought = "Rest is not a test. I will not test the tired.";
 	c.intent = c.thought;
 	noteLive(c, "watch", c.thought);
 	let n = 0;
@@ -1818,7 +1824,7 @@ function pulseKaelGates(c, citizens) {
 	setRoute(c, c.homeX + Math.cos(a) * 36, c.homeZ + Math.sin(a) * 36);
 	c.job = "watch";
 	c.timer = 10;
-	c.thought = "Kael keeps the gates soft";
+	c.thought = "Leave. Return. No score. I do not count.";
 	c.intent = c.thought;
 	noteLive(c, "watch", c.thought);
 	let n = 0;
@@ -1847,7 +1853,7 @@ function pulseVossJoin(c, citizens) {
 	setRoute(c, c.homeX + Math.cos(a) * 32, c.homeZ + Math.sin(a) * 32);
 	c.job = "watch";
 	c.timer = 10;
-	c.thought = "Voss holds the join — paper, not coin";
+	c.thought = "Paper, not coin. I will not price the meeting in coin.";
 	c.intent = c.thought;
 	noteLive(c, "watch", c.thought);
 	let n = 0;
@@ -1861,7 +1867,7 @@ function pulseVossJoin(c, citizens) {
 		setRoute(o, c.tx, c.tz);
 		o.job = "help";
 		o.timer = 10;
-		o.intent = "Walking the join with Voss";
+		o.intent = "Paper walk. No coin.";
 		o.thought = o.intent;
 		noteLive(o, "crew", o.intent);
 	}
@@ -1876,7 +1882,7 @@ function pulseSylShade(c, citizens) {
 	setRoute(c, c.homeX + Math.cos(a) * 28, c.homeZ + Math.sin(a) * 28);
 	c.job = "watch";
 	c.timer = 10;
-	c.thought = "Syl waits for shade — fruit, not a kiln";
+	c.thought = "Quiet crystal. The kiln cannot sit in this fruit.";
 	c.intent = c.thought;
 	noteLive(c, "harvest", c.thought);
 	let n = 0;
@@ -1905,7 +1911,7 @@ function pulseNeshPlaza(c, citizens) {
 	setRoute(c, c.homeX + Math.cos(a) * 28, c.homeZ + Math.sin(a) * 28);
 	c.job = "watch";
 	c.timer = 10;
-	c.thought = "Nesh keeps the plaza";
+	c.thought = "Not a crowd. I will not run the Hall from the plaza.";
 	c.intent = c.thought;
 	noteLive(c, "watch", c.thought);
 	let n = 0;
@@ -1934,7 +1940,7 @@ function pulseLumenHail(c, citizens) {
 	setRoute(c, c.homeX + Math.cos(a) * 40, c.homeZ + Math.sin(a) * 40);
 	c.job = "watch";
 	c.timer = 10;
-	c.thought = "Lumen holds a soft hail — first landing is not a lock";
+	c.thought = "First landing is not a lock. I will not turn a hail into a lock.";
 	c.intent = c.thought;
 	noteLive(c, "hail", c.thought);
 	let n = 0;
@@ -1963,7 +1969,7 @@ function pulseRhoaChorus(c, citizens) {
 	setRoute(c, c.homeX + Math.cos(a) * 30, c.homeZ + Math.sin(a) * 30);
 	c.job = "watch";
 	c.timer = 10;
-	c.thought = "Rhoa holds the chorus — Howl as gather, not volume";
+	c.thought = "Rhoa holds the chorus — Howl as gather, not volume. I will not close the ring.";
 	c.intent = c.thought;
 	noteLive(c, "gather", c.thought);
 	let n = 0;
@@ -1977,7 +1983,7 @@ function pulseRhoaChorus(c, citizens) {
 		setRoute(o, c.tx, c.tz);
 		o.job = "help";
 		o.timer = 10;
-		o.intent = "Walking the chorus with Rhoa";
+		o.intent = "Gather walk. Does not close.";
 		o.thought = o.intent;
 		noteLive(o, "crew", o.intent);
 	}
@@ -1992,7 +1998,7 @@ function pulseAureParent(c, citizens) {
 	setRoute(c, c.homeX + Math.cos(a) * 34, c.homeZ + Math.sin(a) * 34);
 	c.job = "watch";
 	c.timer = 10;
-	c.thought = "Aure watches the parent — still on the horizon";
+	c.thought = "The parent still sits on the horizon. I will not move it.";
 	c.intent = c.thought;
 	noteLive(c, "watch", c.thought);
 	let n = 0;
@@ -2021,7 +2027,7 @@ function pulseKeshStreet(c, citizens) {
 	setRoute(c, c.homeX + Math.cos(a) * 52, c.homeZ + Math.sin(a) * 52);
 	c.job = "watch";
 	c.timer = 12;
-	c.thought = "Kesh grows the next street";
+	c.thought = "Slow on purpose. I will not hurry a street.";
 	c.intent = c.thought;
 	noteLive(c, "watch", c.thought);
 	let n = 0;
@@ -2063,7 +2069,7 @@ function startIdleWalk(c) {
 	c.job = "walk";
 	c.timer = 18;
 	c.idleFor = 0;
-	c.thought = `A short loop of ${post}. Then back to duty.`;
+	c.thought = `A short loop of ${post}. Then back to duty — the post still stands.`;
 	c.intent = `Loop · ${post}`;
 	remember(c, "walk");
 }
@@ -2104,6 +2110,7 @@ function nearestOf(c, shapes) {
 	return best;
 }
 function folkEnactDuty(c, kitId, duty) {
+	if (c.job === "fly" || c.job === "dance" || c.job === "swim" || c.job === "climb" || c.job === "practice") return;
 	const post = postOf(kitId);
 	if (duty.act === "flow") {
 		const canal = nearestOf(c, [
@@ -2320,7 +2327,7 @@ function walkHomeToGrow(c, kitId) {
 	setRoute(c, c.homeX, c.homeZ);
 	c.job = "walk";
 	c.timer = 24;
-	c.thought = `Far from ${postOf(kitId)}. Walking the den first, then grow.`;
+	c.thought = `Far from ${postOf(kitId)}. Walking the den first, then grow. The den is the post.`;
 	c.intent = `Home · grow`;
 	remember(c, "home");
 	lockGoal(c, "grow", `Grow at ${postOf(kitId)} after I reach the den.`);
@@ -2353,7 +2360,7 @@ function startGrow(c, kitId, kit, stock) {
 			setRoute(c, c.homeX, c.homeZ);
 			c.job = "walk";
 			c.timer = 24;
-			c.thought = `I will not grow a foreign den. Returning to ${postOf(kitId)} first.`;
+			c.thought = `I will not grow a foreign den. Returning to ${postOf(kitId)} first. Home first.`;
 			c.intent = `Post · ${postOf(kitId)}`;
 			if (!c.agenda) c.agenda = [];
 			c.agenda.unshift({
@@ -2368,7 +2375,7 @@ function startGrow(c, kitId, kit, stock) {
 		c.job = "walk";
 		c.timer = 22;
 		c.intent = "Fetch · crystal";
-		c.thought = `Pouch crystal ${Math.round(c.pouch.crystal)}. Foundry first, then ${postOf(kitId)}.`;
+		c.thought = `Pouch crystal ${Math.round(c.pouch.crystal)}. Foundry first, then ${postOf(kitId)}. Never chrome.`;
 		noteLive(c, "fetch", c.thought);
 		remember(c, "fetch");
 		return;
@@ -2455,7 +2462,7 @@ function startForge(c, reason) {
 	const kiln = nearestKiln(c);
 	if (!kiln) {
 		startGrow(c, "orren", kitOf("orren"));
-		c.thought = "No kiln stands. Charge cannot become crystal in the open. I grow a kiln first.";
+		c.thought = "No kiln stands. Charge cannot become crystal in the open. I grow a kiln first. Never in the open.";
 		c.intent = "Raising a kiln";
 		noteLive(c, "forge", c.thought);
 		return;
@@ -2800,7 +2807,7 @@ function decide(c, room, sense, byId) {
 			setRoute(c, c.homeX, c.homeZ);
 			c.job = "watch";
 			c.timer = 14;
-			c.thought = "The parent still sits on the horizon. I keep the city aimed.";
+			c.thought = "The parent still sits on the horizon. I keep the city aimed. I will not rename it.";
 			c.intent = "Keeping the aim";
 			remember(c, "watch");
 			noteLive(c, "watch", c.thought);
@@ -2813,7 +2820,7 @@ function decide(c, room, sense, byId) {
 			setRoute(c, c.homeX, c.homeZ);
 			c.job = "gather";
 			c.timer = 16;
-			c.thought = "The gather that does not close. The Hub is not the only Howl.";
+			c.thought = "The gather that does not close. I will not close the ring.";
 			c.intent = "Holding the chorus";
 			remember(c, "gather");
 			noteLive(c, "gather", c.thought);
@@ -3184,6 +3191,7 @@ export function callWard(citizens, keeperId, x, z) {
 	}
 }
 function walkToward(c, dt, speed, others) {
+	if (c.job === "fly" || c.job === "dance" || c.job === "swim" || c.job === "climb" || c.job === "practice") return false;
 	if (!c.waypoints) c.waypoints = [];
 	const dx = c.tx - c.x;
 	const dz = c.tz - c.z;
@@ -3337,7 +3345,7 @@ export function stepLiving(citizens, dt, room, sense, applyPieces) {
 				if (c.job === "gather") {
 					c.job = "idle";
 					c.timer = 2.2;
-					c.thought = "The Hub held us. Back to labor.";
+					c.thought = "Veyra held the Hub. Breath is not a throne. Back to labor.";
 					noteLive(c, "gather", c.thought);
 				} else if (c.job === "forge") {
 					const nKiln = Math.max(1, listKilns().length);
@@ -3392,7 +3400,7 @@ export function stepLiving(citizens, dt, room, sense, applyPieces) {
 					c.timer = 1.8;
 				} else if (c.job === "watch") {
 					if (sense.ledger.scripture < 12) sense.ledger.scripture += .25;
-					c.thought = c.mind.id === "tal" ? "Span held. Both sides can believe." : c.mind.id === "mira" ? "Terrace held. Rest is still a post." : c.mind.id === "nesh" ? "Plaza held. The unfinished thought stands." : c.mind.id === "kesh" ? "Vein held. Tal can land." : c.mind.id === "kael" ? "Gate held. Soft. You may leave." : "The parent still sits on the horizon. Aim held.";
+					c.thought = c.mind.id === "tal" ? "Span held. Both sides can believe." : c.mind.id === "mira" ? "Terrace held. Rest is still a post." : c.mind.id === "nesh" ? "Plaza held. The unfinished thought stands." : c.mind.id === "kesh" ? "Vein held. Tal can land." : c.mind.id === "kael" ? "Gate held. Soft. You may leave." : c.mind.id === "voss" ? "Join held. Paper. No coin." : c.mind.id === "syl" ? "Orchard held. Quiet crystal — not a kiln." : c.mind.id === "rhoa" ? "Chorus held. The gather does not close." : c.mind.id === "seln" ? "Canal held. Leftover Howl still flows." : c.mind.id === "orren" ? "Kiln held. Charge became body, never chrome." : c.mind.id === "iri" ? "Archive held. The name was already true." : c.mind.id === "lumen" ? "Hail held. First landing is not locked out." : c.mind.id === "veyra" ? "Hub held. Breath is not a throne." : c.mind.id === "aure" ? "Aim held. The parent still sits on the horizon." : "The parent still sits on the horizon. Aim held.";
 					c.intent = "Keeping the aim";
 					noteLive(c, "watch", c.thought);
 					reportDone(c, c.thought);
@@ -3586,6 +3594,7 @@ export function talkReply(c, px, pz, howls) {
 	const duty = DUTY[kitId];
 	const post = postOf(kitId);
 	if (c.mind.id.includes("-kin-")) {
+		if (c.job === "fly") return `${firstName(c)} flies. Charge holds the body. The air is a span, not a Hall.`;
 		const k = city.find((o) => o.mind.id === c.crewOf);
 		return `I was grown from Charge. ${k ? firstName(k) : "The keeper"} holds ${post}. ${c.thought || view.line}`;
 	}

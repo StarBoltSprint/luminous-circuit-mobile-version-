@@ -48,23 +48,23 @@ function paintSky(geo: THREE.SphereGeometry, radius: number, coreX: number, core
     else c.copy(nadir).lerp(rim, Math.max(0, (ny + 1) / 0.98));
     const toward = Math.max(0, -(x * coreX + z * coreZ) / (radius * coreLen));
     const hz = Math.max(0, 1 - Math.abs(ny) * 2.2);
-    c.lerp(warm, toward * hz * 0.34);
-    c.lerp(gold, toward * toward * hz * 0.22);
+    c.lerp(warm, toward * hz * 0.46);
+    c.lerp(gold, toward * toward * hz * 0.34);
     const away = Math.max(0, (x * coreX + z * coreZ) / (radius * coreLen));
-    c.lerp(cool, away * hz * 0.16);
+    c.lerp(cool, away * hz * 0.22);
     const nx = x / radius;
     const nz = z / radius;
     const band = Math.abs(nx * 0.18 + ny * 0.78 + nz * 0.6);
     const bandW = Math.max(0, 1 - band * 3.8);
-    c.lerp(milk, bandW * (0.1 + toward * 0.08));
+    c.lerp(milk, bandW * (0.16 + toward * 0.12));
     const n = hash(i, 1);
     c.r = Math.min(1, c.r * (0.9 + n * 0.16));
     c.g = Math.min(1, c.g * (0.92 + hash(i, 4) * 0.12));
     c.b = Math.min(1, c.b * (0.94 + hash(i, 7) * 0.1));
     const coreDot = (x * coreX + y * coreY + z * coreZ) / ((radius || 1) * core3);
-    if (coreDot > 0.88) {
-      const k = (coreDot - 0.88) / 0.12;
-      c.lerp(gold, k * k * 0.55);
+    if (coreDot > 0.78) {
+      const k = (coreDot - 0.78) / 0.22;
+      c.lerp(gold, k * k * 0.72);
     }
     cols[i * 3] = c.r;
     cols[i * 3 + 1] = c.g;
@@ -100,16 +100,16 @@ function river(
 
 function goldCrystal() {
   return new THREE.MeshPhysicalMaterial({
-    color: 0xe8c888,
-    emissive: 0xd4a040,
-    emissiveIntensity: 0.55,
-    roughness: 0.14,
-    metalness: 0.62,
-    iridescence: 0.48,
+    color: 0xffe8b0,
+    emissive: 0xe8b040,
+    emissiveIntensity: 0.92,
+    roughness: 0.1,
+    metalness: 0.68,
+    iridescence: 0.58,
     iridescenceIOR: 1.28,
     iridescenceThicknessRange: [80, 420],
-    clearcoat: 0.72,
-    clearcoatRoughness: 0.12,
+    clearcoat: 0.82,
+    clearcoatRoughness: 0.08,
     fog: false,
     toneMapped: false,
   });
@@ -119,15 +119,15 @@ function goldCage() {
   return new THREE.MeshPhysicalMaterial({
     color: 0xc4a060,
     emissive: 0x8a6020,
-    emissiveIntensity: 0.22,
-    roughness: 0.28,
-    metalness: 0.7,
-    iridescence: 0.36,
+    emissiveIntensity: 0.34,
+    roughness: 0.26,
+    metalness: 0.74,
+    iridescence: 0.42,
     iridescenceIOR: 1.26,
-    clearcoat: 0.5,
-    clearcoatRoughness: 0.2,
+    clearcoat: 0.56,
+    clearcoatRoughness: 0.18,
     transparent: true,
-    opacity: 0.88,
+    opacity: 0.72,
     fog: false,
     toneMapped: false,
   });
@@ -146,8 +146,8 @@ export function growAtmos(group: THREE.Group, coarse: boolean): void {
   const { x: CORE_X, y: CORE_Y, z: CORE_Z } = STAR_CORE;
   const SKY = SKY_R;
 
-  const skySeg = coarse ? 24 : 48;
-  const skyRing = coarse ? 16 : 28;
+  const skySeg = coarse ? 28 : 56;
+  const skyRing = coarse ? 18 : 32;
   const skyGeo = new THREE.SphereGeometry(SKY, skySeg, skyRing);
   paintSky(skyGeo, SKY, CORE_X, CORE_Y, CORE_Z);
   const sky = new THREE.Mesh(
@@ -176,17 +176,26 @@ export function growAtmos(group: THREE.Group, coarse: boolean): void {
   core.renderOrder = -8;
 
   const heart = new THREE.Mesh(
-    new THREE.IcosahedronGeometry(coarse ? 16 : 20, 1),
+    new THREE.IcosahedronGeometry(coarse ? 72 : 110, 1),
     goldCrystal(),
   );
-  heart.scale.set(1, 1.12, 1);
+  heart.scale.set(1, 1.18, 1);
   heart.castShadow = false;
   heart.receiveShadow = false;
   heart.renderOrder = -6;
   core.add(heart);
 
+  const ember = new THREE.Mesh(
+    new THREE.IcosahedronGeometry(coarse ? 28 : 42, 0),
+    addMat(0xfff4d0, 0.52),
+  );
+  ember.renderOrder = -5;
+  ember.castShadow = false;
+  ember.receiveShadow = false;
+  core.add(ember);
+
   const cage = new THREE.Mesh(
-    new THREE.OctahedronGeometry(coarse ? 34 : 44, 1),
+    new THREE.OctahedronGeometry(coarse ? 130 : 196, 1),
     goldCage(),
   );
   cage.scale.set(1, 1.18, 1);
@@ -196,31 +205,31 @@ export function growAtmos(group: THREE.Group, coarse: boolean): void {
   cage.renderOrder = -7;
   core.add(cage);
 
-  const inner = new THREE.Mesh(new THREE.SphereGeometry(coarse ? 24 : 32, 12, 10), addMat(0xffe8b0, 0.16));
+  const inner = new THREE.Mesh(new THREE.SphereGeometry(coarse ? 90 : 140, 14, 12), addMat(0xffe8b0, 0.26));
   inner.renderOrder = -6;
   inner.castShadow = false;
   inner.receiveShadow = false;
   core.add(inner);
 
-  const disc = new THREE.Mesh(new THREE.CircleGeometry(coarse ? 120 : 188, 32), addMat(0xe8c070, 0.14));
+  const disc = new THREE.Mesh(new THREE.CircleGeometry(coarse ? 320 : 520, 36), addMat(0xe8c070, 0.22));
   disc.renderOrder = -9;
   disc.castShadow = false;
   disc.receiveShadow = false;
   core.add(disc);
 
-  const answer = new THREE.Mesh(new THREE.CircleGeometry(coarse ? 90 : 140, 28), addMat(0x48c8d8, 0.05));
+  const answer = new THREE.Mesh(new THREE.CircleGeometry(coarse ? 240 : 400, 32), addMat(0x48c8d8, 0.1));
   answer.renderOrder = -9;
   answer.castShadow = false;
   answer.receiveShadow = false;
   core.add(answer);
 
-  const halo = new THREE.Mesh(new THREE.CircleGeometry(coarse ? 220 : 360, 32), addMat(0xc49848, 0.055));
+  const halo = new THREE.Mesh(new THREE.CircleGeometry(coarse ? 520 : 820, 36), addMat(0xc49848, 0.085));
   halo.renderOrder = -10;
   halo.castShadow = false;
   halo.receiveShadow = false;
   core.add(halo);
 
-  const corona = new THREE.Mesh(new THREE.SphereGeometry(coarse ? 56 : 84, 14, 12), addMat(0xf0d090, 0.09));
+  const corona = new THREE.Mesh(new THREE.SphereGeometry(coarse ? 180 : 280, 16, 14), addMat(0xf0d090, 0.14));
   corona.renderOrder = -8;
   corona.castShadow = false;
   corona.receiveShadow = false;
@@ -228,19 +237,19 @@ export function growAtmos(group: THREE.Group, coarse: boolean): void {
   root.add(core);
 
   const bandSegs = coarse ? 40 : 72;
-  river(root, 3920, 22, 0xc4a060, 0.048, 1.49, 0.05, 310, bandSegs);
-  river(root, 3480, 32, 0x3aa8c0, 0.062, 1.22, 0.2, 640, bandSegs);
+  river(root, 3920, 26, 0xc4a060, 0.062, 1.49, 0.05, 310, bandSegs);
+  river(root, 3480, 38, 0x3aa8c0, 0.078, 1.22, 0.2, 640, bandSegs);
   if (!coarse) {
     river(root, 3060, 18, 0x6a48a8, 0.05, 1.08, -0.34, 980, bandSegs);
     river(root, 4180, 14, 0xe0c070, 0.032, 1.52, -0.08, 180, bandSegs);
   }
 
-  const starN = coarse ? 70 : 180;
+  const starN = coarse ? 90 : 240;
   const starMat = new THREE.MeshBasicMaterial({
     color: 0xffffff,
     vertexColors: true,
     transparent: true,
-    opacity: 0.46,
+    opacity: 0.58,
     blending: THREE.AdditiveBlending,
     depthWrite: false,
     fog: false,
@@ -263,13 +272,13 @@ export function growAtmos(group: THREE.Group, coarse: boolean): void {
     if (dot > 0.94) continue;
     dummy.position.set(x, y, z);
     dummy.rotation.set(hash(i, 17) * 2, theta, phi);
-    const bright = hash(i, 29) > 0.86;
-    const s = bright ? 11 + hash(i, 21) * 10 : 3.2 + hash(i, 21) * 6;
+    const bright = hash(i, 29) > 0.82;
+    const s = bright ? 14 + hash(i, 21) * 14 : 3.6 + hash(i, 21) * 7;
     dummy.scale.set(s, s * (0.75 + hash(i, 5) * 0.8), s);
     dummy.updateMatrix();
     stars.setMatrixAt(placed, dummy.matrix);
     tint.setHex(pal[i % pal.length]!);
-    if (bright) tint.multiplyScalar(1.35);
+    if (bright) tint.multiplyScalar(1.55);
     stars.setColorAt(placed, tint);
     placed += 1;
   }

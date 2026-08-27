@@ -77,6 +77,69 @@ import { growPool } from "./pool";
 import { growWatch } from "./watch";
 import { growCorona } from "./corona";
 import { growVault } from "./vault";
+import { growAurora } from "./aurora";
+import { growShards } from "./shards";
+import { growFlare } from "./flare";
+import { growGlow } from "./glow";
+import { growSheen } from "./sheen";
+import { growGlint } from "./glint";
+import { growKiss } from "./kiss";
+import { growLimb } from "./limb";
+import { growWash } from "./wash";
+import { growNook } from "./nook";
+import { growGrate } from "./grate";
+import { growCanopy } from "./canopy";
+import { growDais } from "./dais";
+import { growCairn } from "./cairn";
+import { growRill } from "./rill";
+import { growPetal } from "./petal";
+import { growSeam } from "./seam";
+import { growLanding } from "./landing";
+import { growHush } from "./hush";
+import { growChoir } from "./choir";
+import { growWestmark } from "./westmark";
+import { growJoinwalk } from "./joinwalk";
+import { growRestgate } from "./restgate";
+import { growSpanrest } from "./spanrest";
+import { growQuietvein } from "./quietvein";
+import { growResidual } from "./residual";
+import { growHubaim } from "./hubaim";
+import { growNamestone } from "./namestone";
+import { growFirelight } from "./firelight";
+import { growBreathrest } from "./breathrest";
+import { growJoinflow } from "./joinflow";
+import { growParentname } from "./parentname";
+import { growHubjoin } from "./hubjoin";
+import { growHailchorus } from "./hailchorus";
+import { growKilnwild } from "./kilnwild";
+import { growFruitjoin } from "./fruitjoin";
+import { growHubhail } from "./hubhail";
+import { growResthail } from "./resthail";
+import { growKilnspan } from "./kilnspan";
+import { growTendrest } from "./tendrest";
+import { growJoinsoft } from "./joinsoft";
+import { growAimchorus } from "./aimchorus";
+import { growGateswild } from "./gateswild";
+import { growParentdoor } from "./parentdoor";
+import { growKilndoor } from "./kilndoor";
+import { growTendhail } from "./tendhail";
+import { growFruitdoor } from "./fruitdoor";
+import { growNamehail } from "./namehail";
+import { growFruitspan } from "./fruitspan";
+import { growTendvein } from "./tendvein";
+import { growRestkiln } from "./restkiln";
+import { growFruitname } from "./fruitname";
+import { growWildhail } from "./wildhail";
+import { growRestjoin } from "./restjoin";
+import { growKilnname } from "./kilnname";
+import { growTendjoin } from "./tendjoin";
+import { growGatering } from "./gatering";
+import { growKilnfruit } from "./kilnfruit";
+import { growTendterrace } from "./tendterrace";
+import { growSpangate } from "./spangate";
+import { growTendgate } from "./tendgate";
+import { growKilnhail } from "./kilnhail";
+import { growRestname } from "./restname";
 
 const {
   Group, Vector2, LatheGeometry, BoxGeometry, CylinderGeometry, ConeGeometry,
@@ -102,6 +165,8 @@ export type CircuitWorld = {
   districts: District[];
   applyBuild: (workKey: string) => boolean;
   applyPieces: (pieces: BuildPiece[]) => number;
+  showGhosts: (pieces: BuildPiece[]) => void;
+  clearGhosts: () => void;
   setFoundry: (crystal: number, fires: { x: number; z: number }[]) => void;
   addCitizen: (mind: CitizenMind) => void;
   built: Set<string>;
@@ -202,6 +267,14 @@ export function buildWorld(): CircuitWorld {
 	let forgeTick = null;
 	let poolTick = null;
 	let coronaTick = null;
+	let auroraTick = null;
+	let shardsTick = null;
+	let flareTick = null;
+	let glowTick = null;
+	let sheenTick = null;
+	let glintTick = null;
+	let kissTick = null;
+	let limbTick = null;
 	function laterOn(fn) {
 		later.push(fn);
 	}
@@ -1549,6 +1622,69 @@ export function buildWorld(): CircuitWorld {
 		try { growWatch(group, coarse); } catch { /* samsung */ }
 		try { coronaTick = growCorona(group, coarse).tick; } catch { /* samsung */ }
 		try { growVault(group, coarse); } catch { /* samsung */ }
+		try { auroraTick = growAurora(group, coarse).tick; } catch { /* samsung */ }
+		try { shardsTick = growShards(group, coarse).tick; } catch { /* samsung */ }
+		try { flareTick = growFlare(group, coarse).tick; } catch { /* samsung */ }
+		try { glowTick = growGlow(group, coarse).tick; } catch { /* samsung */ }
+		try { sheenTick = growSheen(group, coarse).tick; } catch { /* samsung */ }
+		try { glintTick = growGlint(group, coarse).tick; } catch { /* samsung */ }
+		try { kissTick = growKiss(group, coarse).tick; } catch { /* samsung */ }
+		try { limbTick = growLimb(group, coarse).tick; } catch { /* samsung */ }
+		try { growWash(group, coarse); } catch { /* samsung */ }
+		try { growNook(group, coarse); } catch { /* samsung */ }
+		try { growGrate(group, coarse); } catch { /* samsung */ }
+		try { growCanopy(group, coarse); } catch { /* samsung */ }
+		try { growDais(group, coarse); } catch { /* samsung */ }
+		try { growCairn(group, coarse); } catch { /* samsung */ }
+		try { growRill(group, coarse); } catch { /* samsung */ }
+		try { growPetal(group, coarse); } catch { /* samsung */ }
+		try { growSeam(group, coarse); } catch { /* samsung */ }
+		try { growLanding(group, coarse); } catch { /* samsung */ }
+		try { growHush(group, coarse); } catch { /* samsung */ }
+		try { growChoir(group, coarse); } catch { /* samsung */ }
+		try { growWestmark(group, coarse); } catch { /* samsung */ }
+		try { growJoinwalk(group, coarse); } catch { /* samsung */ }
+		try { growRestgate(group, coarse); } catch { /* samsung */ }
+		try { growSpanrest(group, coarse); } catch { /* samsung */ }
+		try { growQuietvein(group, coarse); } catch { /* samsung */ }
+		try { growResidual(group, coarse); } catch { /* samsung */ }
+		try { growHubaim(group, coarse); } catch { /* samsung */ }
+		try { growNamestone(group, coarse); } catch { /* samsung */ }
+		try { growFirelight(group, coarse); } catch { /* samsung */ }
+		try { growBreathrest(group, coarse); } catch { /* samsung */ }
+		try { growJoinflow(group, coarse); } catch { /* samsung */ }
+		try { growParentname(group, coarse); } catch { /* samsung */ }
+		try { growHubjoin(group, coarse); } catch { /* samsung */ }
+		try { growHailchorus(group, coarse); } catch { /* samsung */ }
+		try { growKilnwild(group, coarse); } catch { /* samsung */ }
+		try { growFruitjoin(group, coarse); } catch { /* samsung */ }
+		try { growHubhail(group, coarse); } catch { /* samsung */ }
+		try { growResthail(group, coarse); } catch { /* samsung */ }
+		try { growKilnspan(group, coarse); } catch { /* samsung */ }
+		try { growTendrest(group, coarse); } catch { /* samsung */ }
+		try { growJoinsoft(group, coarse); } catch { /* samsung */ }
+		try { growAimchorus(group, coarse); } catch { /* samsung */ }
+		try { growGateswild(group, coarse); } catch { /* samsung */ }
+		try { growParentdoor(group, coarse); } catch { /* samsung */ }
+		try { growKilndoor(group, coarse); } catch { /* samsung */ }
+		try { growTendhail(group, coarse); } catch { /* samsung */ }
+		try { growFruitdoor(group, coarse); } catch { /* samsung */ }
+		try { growNamehail(group, coarse); } catch { /* samsung */ }
+		try { growFruitspan(group, coarse); } catch { /* samsung */ }
+		try { growTendvein(group, coarse); } catch { /* samsung */ }
+		try { growRestkiln(group, coarse); } catch { /* samsung */ }
+		try { growFruitname(group, coarse); } catch { /* samsung */ }
+		try { growWildhail(group, coarse); } catch { /* samsung */ }
+		try { growRestjoin(group, coarse); } catch { /* samsung */ }
+		try { growKilnname(group, coarse); } catch { /* samsung */ }
+		try { growTendjoin(group, coarse); } catch { /* samsung */ }
+		try { growGatering(group, coarse); } catch { /* samsung */ }
+		try { growKilnfruit(group, coarse); } catch { /* samsung */ }
+		try { growTendterrace(group, coarse); } catch { /* samsung */ }
+		try { growSpangate(group, coarse); } catch { /* samsung */ }
+		try { growTendgate(group, coarse); } catch { /* samsung */ }
+		try { growKilnhail(group, coarse); } catch { /* samsung */ }
+		try { growRestname(group, coarse); } catch { /* samsung */ }
 	});
 	const lampN = coarse ? 90 : 200;
 	const lampPal = [
@@ -1984,6 +2120,32 @@ export function buildWorld(): CircuitWorld {
 		}
 		return n;
 	}
+	const ghosts = [];
+	function clearGhosts() {
+		for (const m of ghosts) {
+			try { group.remove(m); } catch { /* samsung */ }
+		}
+		ghosts.length = 0;
+	}
+	function showGhosts(pieces) {
+		clearGhosts();
+		if (!pieces || !pieces.length) return;
+		for (const p of pieces) {
+			try {
+				const m = pieceMesh(p);
+				m.traverse((o) => {
+					if (!o.isMesh || !o.material) return;
+					o.material = o.material.clone();
+					o.material.transparent = true;
+					o.material.opacity = 0.34;
+					o.material.depthWrite = false;
+				});
+				m.userData.ghost = true;
+				group.add(m);
+				ghosts.push(m);
+			} catch { /* samsung */ }
+		}
+	}
 	function applyBuild(workKey) {
 		if (built.has(workKey)) return false;
 		const at = denOf(workKey.includes("river") ? "seln" : workKey.includes("span") ? "tal" : workKey.includes("crystal") ? "orren" : "veyra");
@@ -2172,12 +2334,46 @@ export function buildWorld(): CircuitWorld {
 		const camZ = cam.position.z;
 		citizens.forEach((c) => {
 			if (!c.mesh || !c.body) return;
-			c.mesh.position.set(c.x, sampleY(c.x, c.z), c.z);
-			if (Math.hypot(camX - c.x, camZ - c.z) > 110) {
+			const alt = c.job === "fly" ? (c.flyAlt || 22) : 0;
+			c.mesh.position.set(c.x, sampleY(c.x, c.z) + alt, c.z);
+			if (Math.hypot(camX - c.x, camZ - c.z) > 110 && c.job !== "fly") {
 				c.body.rotation.y = c.yaw;
 				return;
 			}
 			if (!c.lLeg || !c.rLeg || !c.lArm || !c.rArm || !c.torso) return;
+			if (c.job === "fly") {
+				const glide = Math.sin(t * 2.2 + c.x * .05);
+				c.lArm.rotation.x = .15;
+				c.rArm.rotation.x = .15;
+				c.lArm.rotation.z = 1.15 + glide * .12;
+				c.rArm.rotation.z = -1.15 - glide * .12;
+				c.lLeg.rotation.x = .28;
+				c.rLeg.rotation.x = .22;
+				c.torso.position.y = 1.22 + glide * .08;
+				c.body.rotation.x = .18;
+				c.body.rotation.y = c.yaw;
+				c.body.rotation.z = glide * .08;
+				if (c.sway) for (const s of c.sway) if (s) s.rotation.y = t * 1.4;
+				return;
+			}
+			if (c.job === "dance") {
+				const beat = Math.sin(t * 8);
+				c.lArm.rotation.x = -1.6;
+				c.rArm.rotation.x = -1.4 + beat * .2;
+				c.lArm.rotation.z = .4;
+				c.rArm.rotation.z = -.4;
+				c.lLeg.rotation.x = beat * .35;
+				c.rLeg.rotation.x = -beat * .35;
+				c.torso.position.y = 1.22 + Math.abs(beat) * .08;
+				c.body.rotation.y = c.yaw;
+				c.body.rotation.x = 0;
+				c.body.rotation.z = beat * .1;
+				return;
+			}
+			c.lArm.rotation.z = 0;
+			c.rArm.rotation.z = 0;
+			c.body.rotation.x = 0;
+			c.body.rotation.z = 0;
 			const moving = c.job === "walk" || c.job === "follow" || c.job === "plaza" || c.job === "help" || c.job === "gather" || c.job === "forge" || c.job === "flow" || c.job === "write" || c.job === "trade" || c.job === "harvest" || c.job === "watch" || c.job === "hail";
 			const gait = moving ? Math.sin(t * 8.4 + c.x * .1) : Math.sin(t * 1.7 + c.z * .05) * .12;
 			const stride = moving ? .58 : .08;
@@ -2223,6 +2419,14 @@ export function buildWorld(): CircuitWorld {
 		try { forgeTick?.(t); } catch { /* samsung */ }
 		try { poolTick?.(t); } catch { /* samsung */ }
 		try { coronaTick?.(t); } catch { /* samsung */ }
+		try { auroraTick?.(t); } catch { /* samsung */ }
+		try { shardsTick?.(t); } catch { /* samsung */ }
+		try { flareTick?.(t); } catch { /* samsung */ }
+		try { glowTick?.(t); } catch { /* samsung */ }
+		try { sheenTick?.(t); } catch { /* samsung */ }
+		try { glintTick?.(t); } catch { /* samsung */ }
+		try { kissTick?.(t); } catch { /* samsung */ }
+		try { limbTick?.(t); } catch { /* samsung */ }
 		for (const u of clocks) if (u) u.value = t;
 		innerCore.rotation.y = t * .25;
 		innerCore.scale.y = 2.6 + Math.sin(t * 1.4) * .12;
@@ -2302,6 +2506,8 @@ export function buildWorld(): CircuitWorld {
 		districts: DISTRICTS,
 		applyBuild,
 		applyPieces,
+		showGhosts,
+		clearGhosts,
 		setFoundry,
 		addCitizen,
 		built,

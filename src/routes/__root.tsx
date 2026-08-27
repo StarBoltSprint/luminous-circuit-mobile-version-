@@ -47,10 +47,49 @@ export const Route = createRootRoute({
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body suppressHydrationWarning>
+        <div
+          id="lc-static-boot"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 2147483646,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 12,
+            background: "#070910",
+            color: "#e8eef8",
+            fontFamily: "system-ui,sans-serif",
+            padding: 24,
+            textAlign: "center",
+          }}
+        >
+          <span style={{ letterSpacing: "0.28em", fontSize: 11, color: "#c9a66b", textTransform: "uppercase" }}>
+            Luminous Circuit
+          </span>
+          <button
+            id="lc-static-go"
+            type="button"
+            style={{
+              border: 0,
+              background: "transparent",
+              color: "#7ef0ff",
+              fontSize: 32,
+              fontWeight: 700,
+              padding: 16,
+            }}
+          >
+            Tap to land
+          </button>
+          <span id="lc-static-sub" style={{ color: "#8b93a7", fontSize: 15 }}>
+            Opening Core Spire…
+          </span>
+        </div>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){document.documentElement.style.background='#070910';if(!/SamsungBrowser/i.test(navigator.userAgent||''))return;var s=document.createElement('script');s.type='module';s.src='/__client.js';s.onerror=function(){var b=document.createElement('button');b.textContent='Retry land';b.setAttribute('style','position:fixed;left:24px;right:24px;bottom:96px;height:52px;border:0;border-radius:12px;background:#e8eef8;color:#070910;font-weight:800;font-size:18px;font-family:system-ui,sans-serif');b.onclick=function(){location.reload()};document.body.appendChild(b);};document.head.appendChild(s);})();`,
+            __html: `(function(){document.documentElement.style.background='#070910';var boot=document.getElementById('lc-static-boot');var go=document.getElementById('lc-static-go');var sub=document.getElementById('lc-static-sub');var taps=0;function hide(){if(boot)boot.style.display='none';}function land(){if(window.__LC_LAND){try{window.__LC_LAND();}catch(e){}if(window.__LC_BOOTED)hide();return;}taps+=1;if(sub)sub.textContent=taps>1?'Retrying…':'Still opening…';if(taps>1)location.replace(location.pathname+'?r='+Date.now());}if(go)go.onclick=function(e){e.preventDefault();land();};if(boot)boot.addEventListener('pointerdown',function(){land();});var n=0;setInterval(function(){if(window.__LC_BOOTED)hide();n+=1;if(!window.__LC_BOOTED&&sub&&n===12)sub.textContent='Slow wake. Tap twice to retry.';},400);})();`,
           }}
         />
         <PreviewHostBridge />

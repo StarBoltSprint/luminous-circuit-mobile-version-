@@ -52,6 +52,11 @@ export interface P2PRoomOptions {
   onMessage?: (from: string, data: unknown, channel: "state" | "reliable") => void;
   /** Fires once, on the first successful signaling poll (registration). */
   onConnected?: () => void;
+  /**
+   * Star topology: only the hub keeps a connection to everyone. Others
+   * connect only to the hub. Set hub with setHub(). Until then, no pairs.
+   */
+  star?: boolean;
 }
 
 interface PeerSlot {
@@ -106,6 +111,9 @@ export class P2PRoom {
   private closed = false;
   private everPolled = false;
   private lastPeersFingerprint = "";
+  private lastRoster: { id: string; name: string }[] = [];
+  private hubId: string | null = null;
+  static readonly LIVE_CAP = 32;
 
   constructor(opts: P2PRoomOptions) {
     this.opts = opts;
@@ -167,6 +175,20 @@ export class P2PRoom {
     return [...this.peers.values()].map((s) => ({ ...s.info }));
   }
 
+  /** Star hub: this id is the live land. Pass selfId if we are the host. */
+  setHub(hubId: string | null): void {
+    this.hubId = hubId;
+    if (this.lastRoster.length) this.reconcileRoster(this.lastRoster);
+  }
+
+  setName(name: string): void {
+    this.opts.name = name.slice(0, 64);
+  }
+
+  hub(): string | null {
+    return this.hubId;
+  }
+
   // ── signaling loop ─────────────────────────────────────────────────────────
 
   private schedulePoll(delay: number): void {
@@ -221,19 +243,36 @@ export class P2PRoom {
   }
 
   private reconcileRoster(peers: { id: string; name: string }[]): void {
+    this.lastRoster = peers;
     const alive = new Set(peers.map((p) => p.id));
-    for (const p of peers) {
-      if (p.id === this.opts.selfId) continue;
+    const others = peers.filter((p) => p.id !== this.opts.selfId);
+    const star = Boolean(this.opts.star);
+    const named = others.filter((p) => p.name === "host").sort((a, b) => a.id.localeCompare(b.id))[0];
+    if (star && named && (!this.hubId || named.id < this.hubId)) this.hubId = named.id;
+    if (star && this.opts.name === "host" && (!this.hubId || this.opts.selfId <= this.hubId)) {
+      this.hubId = this.opts.selfId;
+    }
+    const hub = this.hubId;
+    const iAmHub = Boolean(hub && hub === this.opts.selfId);
+    const allowed = new Set<string>();
+    if (!star) {
+      for (const p of others) allowed.add(p.id);
+    } else if (iAmHub) {
+      for (const p of others.slice(0, P2PRoom.LIVE_CAP - 1)) allowed.add(p.id);
+    } else if (hub && alive.has(hub)) {
+      allowed.add(hub);
+    }
+    for (const p of others) {
+      if (!allowed.has(p.id)) continue;
       const existing = this.peers.get(p.id);
       if (existing) {
         existing.info.name = p.name;
       } else {
-        // Exactly one side dials each pair; the other waits for the offer.
         this.connectTo(p.id, p.name, this.opts.selfId > p.id);
       }
     }
     for (const [id, slot] of this.peers) {
-      if (!alive.has(id)) {
+      if (!alive.has(id) || !allowed.has(id)) {
         slot.pc.close();
         this.peers.delete(id);
       }

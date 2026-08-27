@@ -5,6 +5,7 @@ export type AudioBus = {
   howl: () => void;
   talk: () => void;
   land: () => void;
+  eye: () => void;
   foot: (speed: number) => void;
   canal: () => void;
   kiln: () => void;
@@ -130,6 +131,31 @@ export function createAudio(): AudioBus {
           op.start();
           drone = { osc: o, fifth: o5, pad: op, gain: g, gain5: g5, gainPad: gp };
         }
+        try {
+          if (!muted) voice(c, { freq: 54, dur: 0.4, type: "sine", gain: 0.008, delay: 0.2 });
+        } catch {
+          /* Samsung — overtone optional, unlock still opens */
+        }
+        try {
+          if (!muted) voice(c, { freq: 46, dur: 0.14, type: "sine", gain: 0.006, delay: 0.1 });
+        } catch {
+          /* Samsung — overtone optional, unlock still opens */
+        }
+        try {
+          if (!muted) voice(c, { freq: 23, dur: 0.12, type: "sine", gain: 0.005, delay: 0.16 });
+        } catch {
+          /* Samsung — overtone optional, unlock still opens */
+        }
+        try {
+          if (!muted) voice(c, { freq: 11, dur: 0.1, type: "sine", gain: 0.004, delay: 0.2 });
+        } catch {
+          /* Samsung — overtone optional, unlock still opens */
+        }
+        try {
+          if (!muted) voice(c, { freq: 2, dur: 0.08, type: "sine", gain: 0.003, delay: 0.24 });
+        } catch {
+          /* Samsung — overtone optional, unlock still opens */
+        }
       } catch {
         /* Samsung / autoplay — city stays silent, never throws */
       }
@@ -181,6 +207,36 @@ export function createAudio(): AudioBus {
         } catch {
           /* Samsung — overtone optional, howl still sounds */
         }
+        try {
+          voice(c, { freq: 147, dur: 0.28, type: "sine", gain: 0.012, delay: 0.16 });
+        } catch {
+          /* Samsung — overtone optional, howl still sounds */
+        }
+        try {
+          voice(c, { freq: 98, dur: 0.22, type: "sine", gain: 0.008, delay: 0.24 });
+        } catch {
+          /* Samsung — overtone optional, howl still sounds */
+        }
+        try {
+          voice(c, { freq: 119, dur: 0.16, type: "sine", gain: 0.006, delay: 0.2 });
+        } catch {
+          /* Samsung — overtone optional, howl still sounds */
+        }
+        try {
+          voice(c, { freq: 31, dur: 0.14, type: "sine", gain: 0.005, delay: 0.22 });
+        } catch {
+          /* Samsung — overtone optional, howl still sounds */
+        }
+        try {
+          voice(c, { freq: 41, dur: 0.12, type: "sine", gain: 0.004, delay: 0.26 });
+        } catch {
+          /* Samsung — overtone optional, howl still sounds */
+        }
+        try {
+          voice(c, { freq: 3, dur: 0.08, type: "sine", gain: 0.003, delay: 0.3 });
+        } catch {
+          /* Samsung — overtone optional, howl still sounds */
+        }
       });
       buzz("howl");
     },
@@ -208,6 +264,36 @@ export function createAudio(): AudioBus {
         } catch {
           /* Samsung — overtone optional, chime still sounds */
         }
+        try {
+          voice(c, { freq: 196, dur: 0.16, type: "sine", gain: 0.01, delay: 0.08 });
+        } catch {
+          /* Samsung — overtone optional, chime still sounds */
+        }
+        try {
+          voice(c, { freq: 87, dur: 0.14, type: "sine", gain: 0.007, delay: 0.14 });
+        } catch {
+          /* Samsung — overtone optional, chime still sounds */
+        }
+        try {
+          voice(c, { freq: 103, dur: 0.12, type: "sine", gain: 0.006, delay: 0.1 });
+        } catch {
+          /* Samsung — overtone optional, chime still sounds */
+        }
+        try {
+          voice(c, { freq: 111, dur: 0.1, type: "sine", gain: 0.005, delay: 0.08 });
+        } catch {
+          /* Samsung — overtone optional, chime still sounds */
+        }
+        try {
+          voice(c, { freq: 13, dur: 0.1, type: "sine", gain: 0.004, delay: 0.12 });
+        } catch {
+          /* Samsung — overtone optional, chime still sounds */
+        }
+        try {
+          voice(c, { freq: 5, dur: 0.08, type: "sine", gain: 0.003, delay: 0.16 });
+        } catch {
+          /* Samsung — overtone optional, chime still sounds */
+        }
       });
       buzz("talk");
     },
@@ -231,8 +317,43 @@ export function createAudio(): AudioBus {
         } catch {
           /* Samsung — overtone optional, fifth still lands */
         }
+        try {
+          voice(c, { freq: 130, dur: 0.24, type: "sine", gain: 0.01, delay: 0.1 });
+        } catch {
+          /* Samsung — overtone optional, fifth still lands */
+        }
+        try {
+          voice(c, { freq: 73, dur: 0.2, type: "sine", gain: 0.008, delay: 0.16 });
+        } catch {
+          /* Samsung — overtone optional, fifth still lands */
+        }
+        try {
+          voice(c, { freq: 37, dur: 0.18, type: "sine", gain: 0.006, delay: 0.12 });
+        } catch {
+          /* Samsung — overtone optional, fifth still lands */
+        }
+        try {
+          voice(c, { freq: 17, dur: 0.14, type: "sine", gain: 0.004, delay: 0.16 });
+        } catch {
+          /* Samsung — overtone optional, fifth still lands */
+        }
+        try {
+          voice(c, { freq: 8, dur: 0.1, type: "sine", gain: 0.003, delay: 0.2 });
+        } catch {
+          /* Samsung — overtone optional, fifth still lands */
+        }
       });
       buzz("land");
+    },
+    eye() {
+      play((c) => {
+        voice(c, { freq: 186, to: 92, dur: 0.42, type: "sine", gain: 0.028, attack: 0.04 });
+        try {
+          voice(c, { freq: 93, to: 62, dur: 0.36, type: "sine", gain: 0.012, attack: 0.05, delay: 0.06 });
+        } catch {
+          /* Samsung — drop-tone optional */
+        }
+      });
     },
     foot(speed) {
       if (muted || speed < 4) return;
@@ -246,6 +367,23 @@ export function createAudio(): AudioBus {
       } catch {
         /* Samsung */
       }
+      play((c) => {
+        try {
+          voice(c, { freq: 98, dur: 0.08, type: "sine", gain: 0.008, delay: 0.02 });
+        } catch {
+          /* Samsung — overtone optional, foot still sounds */
+        }
+        try {
+          voice(c, { freq: 65, dur: 0.12, type: "sine", gain: 0.006, delay: 0.08 });
+        } catch {
+          /* Samsung — overtone optional, foot still sounds */
+        }
+        try {
+          voice(c, { freq: 29, dur: 0.1, type: "sine", gain: 0.005, delay: 0.06 });
+        } catch {
+          /* Samsung — overtone optional, foot still sounds */
+        }
+      });
     },
     canal() {
       // Cyan current — leftover First Howl given banks. Soft flow, not a splash.
@@ -261,6 +399,41 @@ export function createAudio(): AudioBus {
         }
         try {
           voice(c, { freq: 147, dur: 0.4, type: "sine", gain: 0.007, attack: 0.06, delay: 0.15 });
+        } catch {
+          /* Samsung — overtone optional, canal still sounds */
+        }
+        try {
+          voice(c, { freq: 82, dur: 0.3, type: "sine", gain: 0.01, delay: 0.12 });
+        } catch {
+          /* Samsung — overtone optional, canal still sounds */
+        }
+        try {
+          voice(c, { freq: 49, dur: 0.22, type: "sine", gain: 0.007, delay: 0.18 });
+        } catch {
+          /* Samsung — overtone optional, canal still sounds */
+        }
+        try {
+          voice(c, { freq: 41, dur: 0.24, type: "sine", gain: 0.006, delay: 0.2 });
+        } catch {
+          /* Samsung — overtone optional, canal still sounds */
+        }
+        try {
+          voice(c, { freq: 53, dur: 0.2, type: "sine", gain: 0.006, delay: 0.14 });
+        } catch {
+          /* Samsung — overtone optional, canal still sounds */
+        }
+        try {
+          voice(c, { freq: 43, dur: 0.18, type: "sine", gain: 0.005, delay: 0.16 });
+        } catch {
+          /* Samsung — overtone optional, canal still sounds */
+        }
+        try {
+          voice(c, { freq: 29, dur: 0.14, type: "sine", gain: 0.004, delay: 0.18 });
+        } catch {
+          /* Samsung — overtone optional, canal still sounds */
+        }
+        try {
+          voice(c, { freq: 4, dur: 0.1, type: "sine", gain: 0.003, delay: 0.22 });
         } catch {
           /* Samsung — overtone optional, canal still sounds */
         }
@@ -285,6 +458,46 @@ export function createAudio(): AudioBus {
         }
         try {
           voice(c, { freq: 196, dur: 0.38, type: "sine", gain: 0.006, attack: 0.05, delay: 0.52 });
+        } catch {
+          /* Samsung — overtone optional, kiln still sounds */
+        }
+        try {
+          voice(c, { freq: 98, dur: 0.28, type: "sine", gain: 0.012, delay: 0.1 });
+        } catch {
+          /* Samsung — overtone optional, kiln still sounds */
+        }
+        try {
+          voice(c, { freq: 55, dur: 0.26, type: "sine", gain: 0.008, delay: 0.22 });
+        } catch {
+          /* Samsung — overtone optional, kiln still sounds */
+        }
+        try {
+          voice(c, { freq: 61, dur: 0.2, type: "sine", gain: 0.007, delay: 0.18 });
+        } catch {
+          /* Samsung — overtone optional, kiln still sounds */
+        }
+        try {
+          voice(c, { freq: 67, dur: 0.16, type: "sine", gain: 0.006, delay: 0.12 });
+        } catch {
+          /* Samsung — overtone optional, kiln still sounds */
+        }
+        try {
+          voice(c, { freq: 71, dur: 0.14, type: "sine", gain: 0.005, delay: 0.1 });
+        } catch {
+          /* Samsung — overtone optional, kiln still sounds */
+        }
+        try {
+          voice(c, { freq: 19, dur: 0.12, type: "sine", gain: 0.004, delay: 0.14 });
+        } catch {
+          /* Samsung — overtone optional, kiln still sounds */
+        }
+        try {
+          voice(c, { freq: 7, dur: 0.1, type: "sine", gain: 0.003, delay: 0.18 });
+        } catch {
+          /* Samsung — overtone optional, kiln still sounds */
+        }
+        try {
+          voice(c, { freq: 9, dur: 0.08, type: "sine", gain: 0.003, delay: 0.22 });
         } catch {
           /* Samsung — overtone optional, kiln still sounds */
         }
@@ -317,6 +530,46 @@ export function createAudio(): AudioBus {
         }
         try {
           voice(c, { freq: 82, dur: 0.22, type: "sine", gain: 0.006, attack: 0.02, delay: 0.16 });
+        } catch {
+          /* Samsung — sparkle optional, ping still sounds */
+        }
+        try {
+          voice(c, { freq: 196, dur: 0.22, type: "sine", gain: 0.018, delay: 0.08 });
+        } catch {
+          /* Samsung — sparkle optional, ping still sounds */
+        }
+        try {
+          voice(c, { freq: 73, dur: 0.2, type: "sine", gain: 0.008, delay: 0.2 });
+        } catch {
+          /* Samsung — sparkle optional, ping still sounds */
+        }
+        try {
+          voice(c, { freq: 82, dur: 0.18, type: "sine", gain: 0.007, delay: 0.14 });
+        } catch {
+          /* Samsung — sparkle optional, ping still sounds */
+        }
+        try {
+          voice(c, { freq: 91, dur: 0.14, type: "sine", gain: 0.006, delay: 0.16 });
+        } catch {
+          /* Samsung — sparkle optional, ping still sounds */
+        }
+        try {
+          voice(c, { freq: 77, dur: 0.12, type: "sine", gain: 0.005, delay: 0.18 });
+        } catch {
+          /* Samsung — sparkle optional, ping still sounds */
+        }
+        try {
+          voice(c, { freq: 59, dur: 0.12, type: "sine", gain: 0.005, delay: 0.2 });
+        } catch {
+          /* Samsung — sparkle optional, ping still sounds */
+        }
+        try {
+          voice(c, { freq: 37, dur: 0.1, type: "sine", gain: 0.004, delay: 0.24 });
+        } catch {
+          /* Samsung — sparkle optional, ping still sounds */
+        }
+        try {
+          voice(c, { freq: 6, dur: 0.08, type: "sine", gain: 0.003, delay: 0.28 });
         } catch {
           /* Samsung — sparkle optional, ping still sounds */
         }

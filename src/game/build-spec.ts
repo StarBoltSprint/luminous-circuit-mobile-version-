@@ -542,6 +542,7 @@ export function composeScene(
       piece("stele", px(-11), pz(-11), j(7, 16, 24), 3.2, rot, mat(0)),
       piece("lamp", px(11), pz(11), j(8, 10, 14), 3, 0, mat(1)),
       piece("tablet", rx(16), rz(16), j(9, 12, 20), j(10, 1.4, 2.2), rot + 0.31, mat(0)),
+      piece("disc", px(-18), pz(8), 7, 5, rot, mat(2)),
     ];
   }
   if (kind === "plaza") {
@@ -551,7 +552,10 @@ export function composeScene(
       piece("stele", rx(14), rz(14), j(5, 12, 18), 5, 0, mat(0)),
       piece("lamp", rx(-12), rz(-12), j(2, 10, 16), 3.2, 0, mat(1)),
       piece("ring", x, z, j(6, 10, 16), j(7, 8, 12), 0, mat(1)),
-      piece("lens", px(16), pz(16), j(8, 10, 16), j(9, 5, 8), rot, mat(0))
+      piece("lens", px(16), pz(16), j(8, 10, 16), j(9, 5, 8), rot, mat(0)),
+      piece("tablet", rx(-16), rz(10), j(10, 8, 12), j(11, 3.5, 6), rot, mat(1)),
+      piece("lamp", px(-18), pz(8), j(12, 10, 14), 3, 0, mat(2)),
+      piece("disc", px(12), pz(-14), 7, 5, rot, mat(0)),
     ];
   }
   if (kind === "notice") {
@@ -561,6 +565,9 @@ export function composeScene(
       piece("stele", px(-8), pz(-8), j(4, 18, 28), j(5, 3, 5), rot, mat(2)),
       piece("lamp", rx(-11), rz(-11), j(6, 10, 14), 3, 0, mat(1)),
       piece("lamp", px(12), pz(12), j(7, 10, 14), 3, 0, mat(0)),
+      piece("inlay", rx(-14), rz(8), 6, j(8, 8, 12), rot, mat(2)),
+      piece("tablet", px(16), pz(-10), j(9, 8, 12), j(10, 3.5, 6), rot, mat(0)),
+      piece("disc", px(-18), pz(14), 7, 5, rot, mat(1)),
     ];
   }
   if (kind === "cistern") {
@@ -571,6 +578,9 @@ export function composeScene(
       piece("lamp", rx(-8), rz(-8), j(4, 10, 15), 3, 0, mat(2)),
       piece("font", rx(12), rz(12), j(7, 8, 12), j(8, 5, 8), 0, mat(0)),
       piece("ring", x, z, j(9, 10, 16), j(10, 8, 12), 0, mat(1)),
+      piece("stele", px(-14), pz(10), j(11, 12, 18), 5, rot, mat(0)),
+      piece("disc", px(16), pz(-8), 7, 5, rot, mat(2)),
+      piece("pad", rx(18), rz(-12), 6, 5, rot, mat(1)),
     ];
   }
   if (kind === "dock") {
@@ -581,6 +591,9 @@ export function composeScene(
       piece("lamp", rx(-8), rz(-8), j(3, 10, 16), 3.1, 0, mat(2)),
       piece("lamp", rx(11), rz(11), j(6, 10, 16), 3, 0, mat(1)),
       piece("disc", px(-16), pz(-16), 7, 5, rot, mat(1)),
+      piece("pad", rx(-12), rz(10), 8, j(7, 5, 8), rot, mat(0)),
+      piece("lamp", px(16), pz(-10), j(8, 10, 14), 3, 0, mat(2)),
+      piece("pad", px(-18), pz(12), 6, 5, rot, mat(1)),
     ];
   }
   if (kind === "orchard") {
@@ -591,6 +604,9 @@ export function composeScene(
       piece("bough", rx(16), rz(16), j(10, 10, 16), j(11, 16, 24), 0, mat(1)),
       piece("lamp", rx(-11), rz(-11), j(7, 10, 16), 3, 0, mat(2)),
       piece("cradle", px(14), pz(14), j(8, 8, 12), j(9, 6, 10), 0, mat(1)),
+      piece("disc", rx(-16), rz(10), j(10, 6, 10), j(11, 4, 7), 0, mat(2)),
+      piece("pad", px(-18), pz(8), 6, 5, rot, mat(0)),
+      piece("lamp", px(18), pz(-8), j(12, 10, 14), 3, 0, mat(1)),
     ];
   }
   if (kind === "garden") {
@@ -601,6 +617,9 @@ export function composeScene(
       piece("lamp", rx(-11), rz(-11), j(7, 10, 16), 3, 0, mat(2)),
       piece("cradle", px(14), pz(14), j(8, 8, 12), j(9, 6, 10), 0, mat(1)),
       piece("grove", rx(-16), rz(-16), j(10, 10, 16), j(11, 9, 14), 0, mat(2)),
+      piece("pad", px(12), pz(-14), 8, j(12, 5, 8), rot, mat(1)),
+      piece("disc", px(-18), pz(8), 7, 5, rot, mat(2)),
+      piece("lamp", rx(18), rz(-10), j(13, 10, 14), 3, 0, mat(0)),
     ];
   }
   if (kind === "breath") {
@@ -610,6 +629,9 @@ export function composeScene(
       piece("font", px(12), pz(12), j(6, 8, 12), j(7, 5, 8), 0, mat(0)),
       piece("lamp", rx(11), rz(11), j(5, 10, 15), 3, 0, mat(2)),
       piece("bell", px(-12), pz(-12), j(10, 22, 32), j(11, 4, 6), 0, mat(2)),
+      piece("pad", rx(-14), rz(8), 8, j(12, 5, 8), rot, mat(1)),
+      piece("disc", px(16), pz(-10), 7, 5, rot, mat(2)),
+      piece("tablet", px(-18), pz(14), j(13, 8, 12), j(14, 3.5, 6), rot, mat(0)),
     ];
   }
   if (kind === "weirway") {
@@ -620,6 +642,9 @@ export function composeScene(
       piece("lamp", rx(-8), rz(-8), j(4, 10, 15), 3, 0, mat(2)),
       piece("well", rx(11), rz(11), j(7, 8, 12), j(8, 5, 8), 0, mat(1)),
       piece("cascade", px(16), pz(16), j(9, 14, 22), j(10, 4, 7), rot, mat(0)),
+      piece("pad", px(-16), pz(8), 8, j(11, 5, 8), rot, mat(2)),
+      piece("disc", px(10), pz(-14), 7, 5, rot, mat(1)),
+      piece("lamp", rx(18), rz(-6), j(13, 10, 15), 3, 0, mat(2)),
     ];
   }
   if (kind === "nest") {
@@ -629,6 +654,9 @@ export function composeScene(
       piece("veil", rx(10), rz(10), j(5, 12, 18), j(6, 6, 10), rot, mat(0)),
       piece("lamp", rx(-8), rz(-8), j(4, 9, 14), 2.8, 0, mat(2)),
       piece("cradle", px(-12), pz(-12), j(7, 8, 12), j(8, 6, 10), rot, mat(1)),
+      piece("pad", rx(12), rz(-8), 8, j(9, 5, 8), rot, mat(2)),
+      piece("disc", px(-16), pz(10), 7, 5, rot, mat(1)),
+      piece("lamp", px(16), pz(-10), j(12, 9, 14), 2.8, 0, mat(0)),
     ];
   }
   if (kind === "presence") {
@@ -639,6 +667,9 @@ export function composeScene(
       piece("lamp", rx(-7), rz(-7), j(4, 10, 14), 3, 0, mat(2)),
       piece("lens", px(-11), pz(-11), j(7, 10, 16), j(8, 5, 8), rot, mat(2)),
       piece("stele", rx(-14), rz(-14), j(9, 12, 18), 5, rot, mat(0)),
+      piece("disc", px(14), pz(-10), 7, 5, rot, mat(1)),
+      piece("pad", px(-16), pz(12), 6, 5, rot, mat(2)),
+      piece("lamp", rx(16), rz(8), j(13, 10, 14), 3, 0, mat(1)),
     ];
   }
   if (kind === "watch") {
@@ -649,6 +680,9 @@ export function composeScene(
       piece("lamp", rx(-8), rz(-8), j(4, 10, 15), 3, 0, mat(2)),
       piece("stele", px(-12), pz(-12), j(7, 12, 18), 5, rot, mat(0)),
       piece("orbit", rx(-14), rz(-14), j(8, 8, 12), j(9, 10, 16), rot, mat(1)),
+      piece("tablet", px(14), pz(-10), j(10, 8, 12), j(11, 3.5, 6), rot, mat(2)),
+      piece("disc", px(-16), pz(12), 7, 5, rot, mat(0)),
+      piece("lamp", rx(18), rz(-8), j(12, 10, 14), 3, 0, mat(1)),
     ];
   }
   if (kind === "path") {
@@ -661,6 +695,10 @@ export function composeScene(
       piece("disc", px(-16), pz(-16), 7, 5, rot, mat(1)),
       piece("arch", rx(12), rz(12), j(6, 24, 32), j(7, 7, 11), rot, mat(1)),
       piece("inlay", rx(-16), rz(-16), 6, j(8, 8, 12), rot, mat(2)),
+      piece("stele", px(18), pz(8), j(9, 12, 18), 5, rot, mat(0)),
+      piece("lamp", px(-18), pz(10), j(10, 10, 14), 3, 0, mat(2)),
+      piece("tablet", px(10), pz(-18), j(11, 8, 12), j(12, 3.5, 6), rot, mat(1)),
+      piece("disc", px(12), pz(-10), 7, 5, rot, mat(2)),
     ];
   }
   if (kind === "font") {
@@ -673,6 +711,10 @@ export function composeScene(
       piece("stele", rx(12), rz(12), j(9, 12, 18), 5, rot, mat(1)),
       piece("font", rx(-16), rz(-16), j(10, 8, 12), j(11, 5, 8), 0, mat(2)),
       piece("lamp", px(16), pz(16), j(12, 10, 15), 3, 0, mat(1)),
+      piece("disc", px(-18), pz(8), 7, 5, rot, mat(0)),
+      piece("pad", rx(18), rz(-8), 6, 5, rot, mat(2)),
+      piece("tablet", px(-10), pz(16), j(15, 8, 12), j(16, 3.5, 6), rot, mat(1)),
+      piece("lamp", rx(8), rz(-14), j(17, 10, 15), 3, 0, mat(0)),
     ];
   }
   if (kind === "boughs") {
@@ -683,6 +725,9 @@ export function composeScene(
       piece("lamp", rx(-10), rz(-10), j(7, 10, 16), 3, 0, mat(1)),
       piece("grove", px(14), pz(14), j(8, 10, 16), j(9, 14, 22), 0, mat(0)),
       piece("grove", rx(16), rz(16), j(10, 10, 16), j(11, 14, 22), 0, mat(1)),
+      piece("disc", px(-16), pz(12), j(12, 6, 10), j(13, 4, 7), 0, mat(2)),
+      piece("pad", rx(-14), rz(8), 8, j(14, 5, 8), rot, mat(0)),
+      piece("lamp", px(18), pz(-8), j(15, 10, 16), 3, 0, mat(2)),
     ];
   }
   if (kind === "kilnwork") {
@@ -695,6 +740,9 @@ export function composeScene(
       piece("spire", px(16), pz(16), j(8, 22, 34), j(9, 3.2, 5), 0, mat(0)),
       piece("bough", rx(-16), rz(-16), j(10, 10, 16), j(11, 12, 18), 0, mat(1)),
       piece("lamp", px(12), pz(12), j(14, 10, 16), 3, 0, mat(1)),
+      piece("pad", rx(-14), rz(10), 8, j(12, 5, 8), rot, mat(1)),
+      piece("disc", px(10), pz(-14), 7, 5, rot, mat(2)),
+      piece("tablet", rx(8), rz(-18), j(16, 8, 12), j(17, 3.5, 6), rot, mat(0)),
     ];
   }
   if (kind === "veilward") {
@@ -707,6 +755,8 @@ export function composeScene(
       piece("cradle", rx(12), rz(12), j(9, 8, 12), j(10, 6, 10), rot, mat(0)),
       piece("arch", px(16), pz(16), j(11, 24, 32), j(12, 7, 11), rot, mat(1)),
       piece("lamp", rx(-16), rz(-16), j(13, 9, 14), 2.8, 0, mat(1)),
+      piece("disc", px(-18), pz(8), 7, 5, rot, mat(2)),
+      piece("tablet", rx(10), rz(-14), j(14, 8, 12), j(15, 3.5, 6), rot, mat(0)),
     ];
   }
   if (kind === "lensing") {
@@ -719,6 +769,8 @@ export function composeScene(
       piece("pad", rx(12), rz(12), 6, 5, rot, mat(0)),
       piece("lens", rx(-16), rz(-16), j(9, 10, 16), j(10, 5, 8), rot, mat(2)),
       piece("lamp", px(16), pz(16), j(11, 10, 14), 3, 0, mat(1)),
+      piece("disc", px(-18), pz(8), 7, 5, rot, mat(2)),
+      piece("pad", rx(-14), rz(10), 8, j(12, 5, 8), rot, mat(1)),
     ];
   }
   if (kind === "cascade") {
@@ -731,6 +783,8 @@ export function composeScene(
       piece("cradle", px(-16), pz(-16), j(9, 8, 12), j(10, 6, 10), rot, mat(0)),
       piece("weir", rx(-16), rz(-16), 8, j(11, 5, 9), rot, mat(1)),
       piece("lamp", px(16), pz(16), j(12, 10, 15), 3, 0, mat(1)),
+      piece("pad", rx(-14), rz(10), 8, j(12, 5, 8), rot, mat(1)),
+      piece("disc", px(10), pz(-14), 7, 5, rot, mat(2)),
     ];
   }
   if (kind === "cradle") {
@@ -741,6 +795,8 @@ export function composeScene(
       piece("lamp", rx(-8), rz(-8), j(5, 10, 15), 3, 0, mat(2)),
       piece("veil", px(-12), pz(-12), j(7, 10, 16), j(8, 6, 10), rot, mat(1)),
       piece("well", rx(-16), rz(-16), j(9, 8, 12), j(10, 5, 8), 0, mat(0)),
+      piece("disc", px(16), pz(16), 7, 5.5, rot, mat(1)),
+      piece("pad", rx(-14), rz(10), 8, j(11, 5, 8), rot, mat(1)),
     ];
   }
   if (kind === "mosaic") {
@@ -753,6 +809,7 @@ export function composeScene(
       piece("tablet", rx(-10), rz(-10), j(7, 8, 12), j(8, 3.5, 6), rot, mat(0)),
       piece("inlay", rx(14), rz(14), 6, j(9, 12, 18), 0, mat(2)),
       piece("lamp", rx(-16), rz(-16), j(10, 10, 16), 3, 0, mat(1)),
+      piece("disc", px(10), pz(-14), 7, 5, rot, mat(2)),
     ];
   }
   if (kind === "beacon") {
@@ -764,6 +821,9 @@ export function composeScene(
       piece("lamp", rx(10), rz(10), j(6, 10, 15), 3, 0, mat(1)),
       piece("stele", px(-14), pz(-14), j(7, 16, 24), 5, rot, mat(0)),
       piece("spire", rx(14), rz(14), j(8, 40, 56), j(9, 1.6, 2.4), 0, mat(1)),
+      piece("disc", px(16), pz(-8), 7, 5.5, rot, mat(2)),
+      piece("tablet", px(-16), pz(12), j(10, 8, 12), j(11, 3.5, 6), rot, mat(0)),
+      piece("pad", rx(-14), rz(10), 8, j(12, 5, 8), rot, mat(1)),
     ];
   }
   if (kind === "trading") {
@@ -775,6 +835,9 @@ export function composeScene(
       piece("font", rx(10), rz(-8), j(8, 8, 12), j(9, 5, 8), 0, mat(1)),
       piece("pad", px(8), pz(-14), 6, 5, rot, mat(2)),
       piece("lamp", rx(-8), rz(12), j(10, 10, 14), 3, 0, mat(0)),
+      piece("stele", px(-18), pz(-8), j(11, 12, 18), 5, rot, mat(1)),
+      piece("disc", px(18), pz(8), 7, 5, rot, mat(2)),
+      piece("pad", rx(14), rz(-10), 8, j(12, 5, 8), rot, mat(1)),
     ];
   }
   const a = h(seed, 1) * Math.PI * 2;

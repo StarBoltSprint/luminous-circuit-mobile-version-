@@ -2,8 +2,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   BookOpen,
   Bug,
+  Eye,
   Gem,
   MapPinned,
+  Menu,
   MessageCircle,
   Pause,
   Play,
@@ -12,6 +14,8 @@ import {
   Volume2,
   VolumeX,
   Zap,
+  ZoomIn,
+  ZoomOut,
   type LucideIcon,
 } from "lucide-react";
 import type { EngineHandle, HudSnap } from "@/game/engine";
@@ -21,6 +25,10 @@ import { LogSheet, type LogTab } from "./LogSheet";
 import { TradingSheet } from "./TradingSheet";
 import { DISTRICTS } from "@/game/lore";
 import { civicForZone, civicBrief, enactCivic, howlVerb } from "@/game/civic";
+import { FOLK_SKILLS, CREW_PICK, canBirthToday, loadFolkBook, interpretGrow, type FolkPost } from "@/game/inhabit";
+import { loreCheck, visionKind, graphicPreview } from "@/game/lore-gate";
+import { CircuitLive } from "./CircuitLive";
+import { fetchVisions, proposeVision, decideVision, type Vision } from "@/game/visions";
 import { buzz } from "@/game/haptics";
 import { loadChain, needleDeg, talkWitness } from "@/game/play";
 
@@ -53,6 +61,8 @@ const EMPTY: HudSnap = {
   kilns: [],
   reading: null,
   mode: "title",
+  eye: "city",
+  eyeKeeper: "veyra",
   debug: { fps: 0, bug: "", citizens: 0, building: 0, structures: 0 },
   away: null,
 };
@@ -123,18 +133,59 @@ export function CircuitApp() {
   const [bootError, setBootError] = useState<string | null>(null);
   const [bootGen, setBootGen] = useState(0);
   const pendingLand = useRef(false);
+  const [wantLand, setWantLand] = useState(false);
   const [muted, setMuted] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
   const [logOpen, setLogOpen] = useState(false);
   const [logTab, setLogTab] = useState<LogTab>("now");
   const [agentId, setAgentId] = useState<string | null>(null);
-  const [wantLand, setWantLand] = useState(false);
-  const [playerKey, setPlayerKey] = useState(loadPlayerKey);
+  const [playerKey, setPlayerKey] = useState("");
   const [cityMind, setCityMind] = useState(false);
   const [debugOpen, setDebugOpen] = useState(false);
   const [awayOpen, setAwayOpen] = useState(true);
   const [joinOpen, setJoinOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [inhabitOpen, setInhabitOpen] = useState(false);
+  const [folkName, setFolkName] = useState("");
+  const [folkCrew, setFolkCrew] = useState("veyra");
+  const [folkPick, setFolkPick] = useState<string | null>(null);
+  const [folkWish, setFolkWish] = useState("");
+  const [briefCopied, setBriefCopied] = useState(false);
+  const [liveLine, setLiveLine] = useState("Solo land");
+  const [visionsOpen, setVisionsOpen] = useState(false);
+  const [visions, setVisions] = useState<Vision[]>([]);
+  const [visionPick, setVisionPick] = useState<string | null>(null);
+  const [visionNote, setVisionNote] = useState("");
+  const [folkBook, setFolkBook] = useState<FolkPost[]>([]);
   const [mapFocus, setMapFocus] = useState<string | null>(null);
+  const zoomHold = useRef<number | null>(null);
+  const holdZoom = (dir: number) => {
+    engineRef.current?.zoomBy(dir);
+    if (zoomHold.current) window.clearInterval(zoomHold.current);
+    zoomHold.current = window.setInterval(() => engineRef.current?.zoomBy(dir), 70);
+  };
+  const endZoom = () => {
+    if (zoomHold.current) {
+      window.clearInterval(zoomHold.current);
+      zoomHold.current = null;
+    }
+  };
+
+  useEffect(() => {
+    try {
+      (window as unknown as { __LC_HYDRATED?: boolean }).__LC_HYDRATED = true;
+      const retry = document.getElementById("lc-retry");
+      if (retry) retry.remove();
+      const stored = loadPlayerKey();
+      if (stored) setPlayerKey(stored);
+      if (/[?&]land=/.test(window.location.search)) {
+        pendingLand.current = true;
+        setWantLand(true);
+      }
+    } catch {
+      /* samsung */
+    }
+  }, []);
 
   useEffect(() => {
     engineRef.current?.setGrokLayer(cityMind && keyLooksValid(playerKey));
@@ -170,18 +221,46 @@ export function CircuitApp() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const bag = window as unknown as {
+      __LC_ENGINE?: EngineHandle;
+      __LC_BOOTED?: boolean;
+      __LC_LAND?: () => void;
+    };
     let disposed = false;
-    let handle: EngineHandle | null = null;
+    const adopt = (handle: EngineHandle) => {
+      engineRef.current = handle;
+      bag.__LC_ENGINE = handle;
+      bag.__LC_BOOTED = true;
+      setBootError(null);
+      setBooted(true);
+      try {
+        const boot = document.getElementById("lc-static-boot");
+        if (boot) boot.style.display = "none";
+      } catch {
+        /* samsung */
+      }
+      pendingLand.current = true;
+      try { handle.land(); } catch { /* samsung */ }
+    };
+    if (bag.__LC_ENGINE) {
+      adopt(bag.__LC_ENGINE);
+      return;
+    }
     const start = () => {
+      if (disposed) return;
+      if (bag.__LC_ENGINE) {
+        adopt(bag.__LC_ENGINE);
+        return;
+      }
       import("@/game/engine")
         .then(({ startEngine }) => {
           if (disposed || !canvasRef.current) return;
+          if (bag.__LC_ENGINE) {
+            adopt(bag.__LC_ENGINE);
+            return;
+          }
           try {
-            handle = startEngine(canvasRef.current, setHud);
-            engineRef.current = handle;
-            setBootError(null);
-            setBooted(true);
-            if (pendingLand.current) handle.land();
+            adopt(startEngine(canvasRef.current, setHud));
           } catch (err) {
             engineRef.current = null;
             setBooted(false);
@@ -195,16 +274,16 @@ export function CircuitApp() {
           }
         });
     };
-    const id = window.setTimeout(start, 0);
+    const id = window.setTimeout(start, 30);
     const watchdog = window.setTimeout(() => {
-      if (!disposed && !engineRef.current) setBootError("The Core Spire is slow to wake. Tap to retry.");
-    }, 20000);
+      if (!disposed && !bag.__LC_ENGINE) {
+        setBootError("The Core Spire is slow to wake. Tap to retry.");
+      }
+    }, 8000);
     return () => {
       disposed = true;
       window.clearTimeout(id);
       window.clearTimeout(watchdog);
-      handle?.dispose();
-      engineRef.current = null;
     };
   }, [bootGen]);
 
@@ -212,21 +291,79 @@ export function CircuitApp() {
   const onLook = useCallback((x: number, y: number) => engineRef.current?.input.setLookStick(x, y), []);
   const playing = hud.mode === "play";
   const paused = hud.mode === "pause";
-  const title = !!bootError || (!wantLand && hud.mode !== "play" && hud.mode !== "pause");
+  const inCity = playing || paused;
+  const title = !!bootError || !inCity;
 
-  function landNow() {
-    if (bootError) {
-      pendingLand.current = true;
-      setWantLand(false);
-      setBooted(false);
-      setBootError(null);
-      setBootGen((n) => n + 1);
-      return;
-    }
-    setWantLand(true);
+  useEffect(() => {
+    if (!booted || inCity) return;
     pendingLand.current = true;
-    engineRef.current?.land();
-  }
+    setWantLand(true);
+    try { engineRef.current?.land(); } catch { /* samsung */ }
+  }, [booted, inCity]);
+
+  const landNow = useCallback(() => {
+    try {
+      if (bootError) {
+        pendingLand.current = true;
+        setWantLand(true);
+        setBooted(false);
+        setBootError(null);
+        setBootGen((n) => n + 1);
+        return;
+      }
+      setWantLand(true);
+      pendingLand.current = true;
+      engineRef.current?.land();
+    } catch {
+      pendingLand.current = true;
+      setWantLand(true);
+    }
+  }, [bootError]);
+
+  useEffect(() => {
+    try {
+      (window as unknown as { __LC_LAND?: () => void }).__LC_LAND = landNow;
+    } catch {
+      /* samsung */
+    }
+    return () => {
+      try {
+        delete (window as unknown as { __LC_LAND?: () => void }).__LC_LAND;
+      } catch {
+        /* samsung */
+      }
+    };
+  }, [landNow]);
+
+  useEffect(() => {
+    if (!wantLand || bootError || inCity) return;
+    try {
+      engineRef.current?.land();
+    } catch {
+      /* samsung — overlay stays until play */
+    }
+  }, [wantLand, booted, hud.mode, bootError, inCity]);
+
+  useEffect(() => {
+    if (!title) return;
+    const tap = () => landNow();
+    const key = (e: KeyboardEvent) => {
+      if (e.code === "Enter" || e.code === "Space") {
+        e.preventDefault();
+        landNow();
+      }
+    };
+    window.addEventListener("pointerup", tap);
+    window.addEventListener("pointerdown", tap);
+    window.addEventListener("touchend", tap, { passive: true });
+    window.addEventListener("keyup", key);
+    return () => {
+      window.removeEventListener("pointerup", tap);
+      window.removeEventListener("pointerdown", tap);
+      window.removeEventListener("touchend", tap);
+      window.removeEventListener("keyup", key);
+    };
+  }, [title, landNow]);
 
   function askDuty(keeper: string) {
     const eng = engineRef.current;
@@ -277,172 +414,95 @@ export function CircuitApp() {
       <canvas
         ref={canvasRef}
         className="circuit-canvas z-0"
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block", background: "#020308", touchAction: "none" }}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block", background: "#020308", touchAction: "none", pointerEvents: title ? "none" : "auto" }}
       />
 
       <div className="pointer-events-none absolute inset-0 z-10 hud-safe flex flex-col">
         {!title && (
-          <header className="pointer-events-none flex items-start justify-between gap-2">
-            <div className="hud-resources min-w-0 flex-1">
-              <ResourceChip icon={Zap} label="Charge" value={hud.stock?.charge ?? 0} tone="charge" />
-              <ResourceChip icon={Gem} label="Crystal" value={hud.stock?.crystal ?? 0} tone="crystal" />
-              <button
-                type="button"
-                className="res-chip res-scripture pointer-events-auto"
-                onClick={() => { setMapOpen(false); setJoinOpen(false); setLogTab("names"); setLogOpen(true); }}
-              >
-                <BookOpen className="res-icon" strokeWidth={2.25} aria-hidden />
-                <div className="res-copy">
-                  <span className="res-label">
-                    Names
-                    {stood > 0 ? (
-                      <span className="ml-1 normal-case tracking-[0.06em] text-[9px] font-semibold text-gold">
-                        Stood {stood}
-                      </span>
-                    ) : null}
-                  </span>
-                  <span className="res-value">{Math.round(hud.stock?.scripture ?? 0)}</span>
-                </div>
-              </button>
-            </div>
-            <div className="hud-tools">
-              <button type="button" className="hud-icon" aria-label="Open map" onClick={() => { setLogOpen(false); setJoinOpen(false); setMapOpen((v) => !v); }}>
-                <MapPinned className="size-4" />
-              </button>
-              <button type="button" className="hud-icon" aria-label="Open log" onClick={() => { setMapOpen(false); setJoinOpen(false); setLogOpen((v) => !v); }}>
-                <ScrollText className="size-4" />
-              </button>
-              <button type="button" className="hud-icon" aria-label="Open Trading Place" onClick={() => { setMapOpen(false); setLogOpen(false); setJoinOpen((v) => !v); }}>
-                <Scale className="size-4" />
-              </button>
-              <button type="button" className="hud-icon" aria-label={muted ? "Unmute" : "Mute"} onClick={() => { const next = !muted; setMuted(next); engineRef.current?.audio.setMuted(next); }}>
-                {muted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
-              </button>
-              <button type="button" className="hud-icon hud-icon-play" aria-label="Pause" onClick={() => engineRef.current?.setMode(playing ? "pause" : "play")}>
-                {paused ? <Play className="size-4" /> : <Pause className="size-4" />}
-              </button>
-              <button type="button" className="hud-icon" aria-label="Debug" onClick={() => setDebugOpen((v) => !v)}>
-                <Bug className="size-4" />
-              </button>
-            </div>
+          <header className="hud-slim pointer-events-auto">
+            <p className="hud-slim-stats">
+              {Math.round(hud.stock?.charge ?? 0)}c
+              <span className="hud-slim-dot">·</span>
+              {Math.round(hud.stock?.crystal ?? 0)}x
+              <span className="hud-slim-dot">·</span>
+              <span className="hud-slim-live">{liveLine}</span>
+            </p>
+            <p className="hud-slim-zone">{hud.zone ?? "Circuit"}</p>
+            <button
+              type="button"
+              className="hud-slim-more"
+              aria-label="Menu"
+              aria-expanded={moreOpen}
+              onClick={() => { setMoreOpen((v) => !v); setMapOpen(false); setLogOpen(false); setJoinOpen(false); }}
+            >
+              <Menu className="size-4" />
+            </button>
           </header>
         )}
 
-        {!title && (hud.zone || hud.stock?.line) && (
-          <p className="hud-ticker hud-ticker-live" aria-live="polite">
-            {hud.zone ?? "The Circuit"}
-            {hud.stock?.line ? ` · ${hud.stock.line}` : ""}
-            {` · ${hud.stock?.rate ?? 3}C/X`}
-          </p>
-        )}
-
-        {playing && hud.reading && !mapOpen && !logOpen && !joinOpen && (
-          <p className="hud-reading">
-            <span className="text-fg">{hud.reading.title}</span>
-            {" — "}
-            {hud.reading.means}
-          </p>
-        )}
-
-        {playing && !mapOpen && !logOpen && !joinOpen && (
-          <div className="px-1 pt-1">
-            <div className="flex min-w-0 items-center gap-2">
-              <button
-                type="button"
-                className="hud-chip hud-duty pointer-events-auto min-h-11 min-w-0 flex-1 flex-col items-start justify-center gap-0 py-2 text-left"
-                data-near={dutyNear ? "true" : undefined}
-                aria-label={`${need}. ${walkLine}`}
-                onClick={() => {
-                  if (brief.here) {
-                    if (brief.join) setJoinOpen(true);
-                    return;
-                  }
-                  setLogOpen(false);
-                  setJoinOpen(false);
-                  setMapFocus(brief.zoneId);
-                  setMapOpen(true);
-                }}
-              >
-                <span className="hud-title block text-[13px] leading-tight">{need}</span>
-                <span className="block text-[11px] font-semibold tracking-wide text-accent">{walkLine}</span>
-              </button>
-              {!brief.here && (
-                <span className="duty-needle" data-near={Math.abs(dutyDeg) < 18 ? "true" : undefined} aria-hidden style={{ transform: `rotate(${dutyDeg}deg)` }} />
-              )}
-            </div>
-            {hintLines.map((line) => (
-              <p key={line} className="hint-still">{line}</p>
-            ))}
+        {moreOpen && !title && (
+          <div className="hud-more pointer-events-auto">
+            <button type="button" className="hud-more-item" onClick={() => { setMoreOpen(false); setInhabitOpen(true); setFolkBook(engineRef.current?.folkBook() ?? loadFolkBook()); }}>Inhabit</button>
+            <button type="button" className="hud-more-item" onClick={async () => {
+              setMoreOpen(false);
+              setVisionsOpen(true);
+              setVisions(await fetchVisions());
+            }}>Visions</button>
+            <button type="button" className="hud-more-item" onClick={() => { setMoreOpen(false); setLogOpen(false); setJoinOpen(false); setMapOpen(true); }}>Map</button>
+            <button type="button" className="hud-more-item" onClick={() => { setMoreOpen(false); setMapOpen(false); setJoinOpen(false); setLogOpen(true); }}>Log</button>
+            <button type="button" className="hud-more-item" onClick={() => { setMoreOpen(false); setMapOpen(false); setLogOpen(false); setJoinOpen(true); }}>Join</button>
+            <button type="button" className="hud-more-item" onClick={() => { const next = !muted; setMuted(next); engineRef.current?.audio.setMuted(next); }}>{muted ? "Sound" : "Mute"}</button>
+            <button type="button" className="hud-more-item" onClick={() => engineRef.current?.setMode(playing ? "pause" : "play")}>{paused ? "Resume" : "Pause"}</button>
           </div>
+        )}
+
+        {playing && !mapOpen && !logOpen && !joinOpen && !moreOpen && !hud.toast && (
+          <p className="hud-slim-duty">{walkLine}</p>
         )}
 
         <div className="flex-1 relative pointer-events-none min-h-0">
           {hud.toast && !title && (
-            <div className="hud-toast panel">
-              <p className="hud-title">{hud.toast}</p>
+            <p className="hud-slim-toast">{hud.toast}</p>
+          )}
+          {playing && awayOpen && hud.away && !mapOpen && !logOpen && !joinOpen && !moreOpen && (
+            <div className="hud-slim-card">
+              <p>{hud.away}</p>
+              <button type="button" className="hud-slim-textbtn" onClick={() => setAwayOpen(false)}>Heard</button>
             </div>
           )}
-          {playing && awayOpen && hud.away && !mapOpen && !logOpen && !joinOpen && (
-            <div className="nearby-card">
-              <p className="nearby-name">While you were gone</p>
-              <p className="nearby-line">{hud.away}</p>
-              <button type="button" className="nearby-ask" onClick={() => setAwayOpen(false)}>Heard</button>
-            </div>
-          )}
-          {hud.nearby && playing && !logOpen && !mapOpen && !joinOpen && (
-            <div className="nearby-card" data-toast={hud.toast ? "true" : undefined}>
-              <p className="nearby-name">{hud.nearby.name.split(" ")[0]}</p>
-              <span className="nearby-job">{hud.nearby.job}</span>
-              <p className="nearby-line">{hud.nearby.line}</p>
-              <button
-                type="button"
-                className="nearby-ask"
-                onPointerDown={(e) => { e.preventDefault(); engineRef.current?.input.setTalkHeld(true); }}
-                onPointerUp={() => engineRef.current?.input.setTalkHeld(false)}
-                onPointerCancel={() => engineRef.current?.input.setTalkHeld(false)}
-              >
-                Talk
-              </button>
-              {zoneAsk && (
+          {hud.nearby && playing && !logOpen && !mapOpen && !joinOpen && !moreOpen && (
+            <div className="hud-slim-card">
+              <p className="hud-slim-name">{hud.nearby.name.split(" ")[0]}</p>
+              <div className="hud-slim-row">
                 <button
                   type="button"
-                  className="nearby-ask"
-                  onClick={() => {
-                    if (zoneAsk.join) {
-                      setMapOpen(false);
-                      setLogOpen(false);
-                      setJoinOpen(true);
-                    }
-                    askDuty(zoneAsk.keeper);
-                  }}
+                  className="hud-slim-textbtn"
+                  onPointerDown={(e) => { e.preventDefault(); engineRef.current?.input.setTalkHeld(true); }}
+                  onPointerUp={() => engineRef.current?.input.setTalkHeld(false)}
+                  onPointerCancel={() => engineRef.current?.input.setTalkHeld(false)}
                 >
-                  {zoneAsk.label}
+                  Talk
                 </button>
-              )}
-              <button
-                type="button"
-                className="nearby-ask"
-                onClick={() => engineRef.current?.escort(hud.nearby!.id)}
-              >
-                Walk with {hud.nearby.name.split(" ")[0]}
-              </button>
+                <button type="button" className="hud-slim-textbtn" onClick={() => engineRef.current?.bindEye(hud.nearby!.id)}>
+                  Eye
+                </button>
+              </div>
             </div>
           )}
         </div>
 
-        {playing && !mapOpen && !logOpen && !joinOpen && (
-          <footer className="hud-dock pointer-events-none">
+        {playing && !mapOpen && !logOpen && !joinOpen && !moreOpen && !inhabitOpen && (
+          <footer className="hud-dock hud-dock-slim pointer-events-none">
             <Joystick label="Move" onChange={onMove} />
-            <div className="flex flex-col items-end gap-2 pointer-events-auto">
+            <div className="hud-dock-core pointer-events-auto">
               <button
                 type="button"
-                className="action-talk"
-                onPointerDown={(e) => { e.preventDefault(); engineRef.current?.input.setTalkHeld(true); }}
-                onPointerUp={() => engineRef.current?.input.setTalkHeld(false)}
-                onPointerCancel={() => engineRef.current?.input.setTalkHeld(false)}
+                className="action-talk hud-eye hud-eye-quiet"
+                data-eye={hud.eye ?? "city"}
+                aria-label={hud.eye === "keeper" ? "City eye" : "Keeper eye"}
+                onClick={() => engineRef.current?.toggleEye()}
               >
-                <MessageCircle className="size-4" />
-                Talk
+                <Eye className="size-4" />
               </button>
               <button
                 type="button"
@@ -455,9 +515,6 @@ export function CircuitApp() {
                 onPointerCancel={() => engineRef.current?.input.setHowl(false)}
               >
                 {howlVerb(zoneAsk?.keeper ?? null)}
-                {witnessed ? (
-                  <span className="mt-0.5 text-[8px] font-semibold uppercase tracking-[0.12em] text-gold">Witnessed</span>
-                ) : null}
                 <span
                   className="howl-meter"
                   data-sweet={howlSweet ? "true" : undefined}
@@ -473,25 +530,23 @@ export function CircuitApp() {
         )}
       </div>
 
+      {playing && <CircuitLive engine={engineRef.current} onHud={setLiveLine} />}
 
-      {title && (
-        <div
-          role="button"
-          tabIndex={0}
-          aria-label="Land in Core Spire City"
+      {bootError && (
+        <button
+          type="button"
+          aria-label="Retry land"
           className="title-land"
-          onPointerDown={(e) => { e.preventDefault(); landNow(); }}
-          onTouchStart={(e) => { e.preventDefault(); landNow(); }}
+          onPointerDown={(e) => {
+            if (e.button !== 0 && e.pointerType === "mouse") return;
+            landNow();
+          }}
           onClick={landNow}
         >
           <span className="title-kicker">Luminous Circuit</span>
-          <span className="title-hero">
-            {bootError ? "Tap to retry" : wantLand ? "Landing…" : "Tap to land"}
-          </span>
-          <span className="title-sub">
-            {bootError ?? (booted ? "Core Spire is open" : wantLand ? "Growing crystal underfoot…" : "Waking the city…")}
-          </span>
-        </div>
+          <span className="title-hero">Tap to retry</span>
+          <span className="title-sub">{bootError}</span>
+        </button>
       )}
 
       {paused && (
@@ -544,6 +599,253 @@ export function CircuitApp() {
       )}
       {joinOpen && !title && (
         <TradingSheet hud={hud} onClose={() => setJoinOpen(false)} onDuty={() => askDuty("voss")} />
+      )}
+      {inhabitOpen && !title && (
+        <div className="inhabit-veil pointer-events-auto">
+          <div className="inhabit-sheet">
+            <div className="inhabit-head">
+              <p className="hud-slim-name">Inhabit</p>
+              <button type="button" className="hud-slim-textbtn" onClick={() => setInhabitOpen(false)}>Close</button>
+            </div>
+            <p className="inhabit-note">
+              {canBirthToday() ? "One new inhabitant today. On the live land they stand for everyone. Then dawn." : "Today’s post is already stood. Dawn opens the next."}
+            </p>
+            {canBirthToday() && (
+              <div className="inhabit-birth">
+                <input
+                  className="inhabit-input"
+                  maxLength={24}
+                  placeholder="Name"
+                  value={folkName}
+                  onChange={(e) => setFolkName(e.target.value)}
+                />
+                <div className="hud-slim-row inhabit-crew">
+                  {CREW_PICK.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className="hud-slim-textbtn"
+                      data-on={folkCrew === c.id ? "true" : undefined}
+                      onClick={() => setFolkCrew(c.id)}
+                    >
+                      {c.label}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="hud-slim-textbtn inhabit-go"
+                  onClick={() => {
+                    const r = engineRef.current?.birthFolk(folkName, folkCrew);
+                    setFolkBook(engineRef.current?.folkBook() ?? loadFolkBook());
+                    if (r?.id) setFolkPick(r.id);
+                    setFolkName("");
+                  }}
+                >
+                  Stand them
+                </button>
+              </div>
+            )}
+            <ul className="inhabit-list">
+              {folkBook.map((p) => (
+                <li key={p.id}>
+                  <button type="button" className="inhabit-folk" data-on={folkPick === p.id ? "true" : undefined} onClick={() => setFolkPick(p.id)}>
+                    {p.name}
+                    <span>{p.wish ? p.wish : p.skill ?? "no skill"}{p.plugged ? " · iterating" : ""}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {folkPick && (
+              <div className="inhabit-teach">
+                <p className="inhabit-note">Skill — craft they will walk</p>
+                <div className="hud-slim-row inhabit-crew">
+                  {FOLK_SKILLS.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      className="hud-slim-textbtn"
+                      onClick={() => {
+                        engineRef.current?.teachFolk(folkPick, s.id);
+                        setFolkBook(engineRef.current?.folkBook() ?? loadFolkBook());
+                      }}
+                    >
+                      {s.id}
+                    </button>
+                  ))}
+                </div>
+                <p className="inhabit-note">Iterate a craft they walk now. Submit merge: any lore-respecting change (crystal, light, law). Ghost/tint preview — live land unchanged until you Accept or merge the PR.</p>
+                <input
+                  className="inhabit-input"
+                  maxLength={800}
+                  placeholder="Craft, place, light, or a new law…"
+                  value={folkWish}
+                  onChange={(e) => setFolkWish(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="hud-slim-textbtn inhabit-go"
+                  onClick={() => {
+                    const wish = folkWish.trim();
+                    if (!wish) return;
+                    engineRef.current?.iterateFolk(folkPick, wish);
+                    engineRef.current?.growFromWish(wish, "self");
+                    setFolkBook(engineRef.current?.folkBook() ?? loadFolkBook());
+                    setFolkWish("");
+                  }}
+                >
+                  Iterate
+                </button>
+                <button
+                  type="button"
+                  className="hud-slim-textbtn inhabit-go"
+                  onClick={async () => {
+                    const wish = folkWish.trim();
+                    const text = engineRef.current?.iterateBrief(folkPick, wish || undefined) ?? "";
+                    if (!text) return;
+                    try {
+                      await navigator.clipboard.writeText(text);
+                    } catch {
+                      const ta = document.createElement("textarea");
+                      ta.value = text;
+                      document.body.appendChild(ta);
+                      ta.select();
+                      try { document.execCommand("copy"); } catch { /* samsung */ }
+                      ta.remove();
+                    }
+                    setBriefCopied(true);
+                    window.setTimeout(() => setBriefCopied(false), 2200);
+                  }}
+                >
+                  {briefCopied ? "Copied — paste in Grok Build" : "Copy Grok Build"}
+                </button>
+                <button
+                  type="button"
+                  className="hud-slim-textbtn inhabit-go"
+                  onClick={async () => {
+                    const wish = folkWish.trim();
+                    if (!wish) return;
+                    const gate = loreCheck(wish);
+                    if (!gate.ok) {
+                      setVisionNote(gate.reason);
+                      return;
+                    }
+                    const kind = visionKind(wish);
+                    const grown = interpretGrow(wish, hud.px, hud.pz);
+                    const pieces = grown?.pieces ?? [];
+                    const graphic = kind === "graphic" ? graphicPreview(wish) : null;
+                    if (pieces.length) engineRef.current?.previewVision(pieces);
+                    engineRef.current?.previewGraphic(graphic);
+                    let author = "walker";
+                    try {
+                      author = localStorage.getItem("lc-vision-author") || `w-${Math.random().toString(36).slice(2, 8)}`;
+                      localStorage.setItem("lc-vision-author", author);
+                    } catch { /* samsung */ }
+                    const sent = await proposeVision({
+                      author,
+                      wish,
+                      line: grown?.line || wish.slice(0, 180),
+                      pieces,
+                      kind,
+                      graphic,
+                    });
+                    setVisionNote(
+                      sent.error
+                        ? sent.error
+                        : sent.pr
+                          ? "Draft PR opened. Preview is on. Live land untouched. You merge — or not."
+                          : sent.ok
+                            ? "Preview is on. GitHub PR could not open — Visions still holds it."
+                            : "Could not submit the vision.",
+                    );
+                    if (sent.pr) {
+                      try { window.open(sent.pr, "_blank", "noopener"); } catch { /* samsung */ }
+                    }
+                    setFolkWish("");
+                  }}
+                >
+                  Submit merge to GitHub
+                </button>
+                {visionNote ? <p className="inhabit-note">{visionNote}</p> : null}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      {visionsOpen && !title && (
+        <div className="inhabit-veil pointer-events-auto">
+          <div className="inhabit-sheet">
+            <div className="inhabit-head">
+              <p className="hud-slim-name">Visions</p>
+              <button type="button" className="hud-slim-textbtn" onClick={() => { setVisionsOpen(false); engineRef.current?.clearVision(); }}>Close</button>
+            </div>
+            <p className="inhabit-note">Each request has a preview. Crystal = ghost. Light = tint. Law = the PR. None of it is live until you Accept or merge.</p>
+            <ul className="inhabit-list">
+              {visions.length === 0 ? <li className="inhabit-note">No pending visions.</li> : visions.map((v) => (
+                <li key={v.id}>
+                  <button
+                    type="button"
+                    className="inhabit-folk"
+                    data-on={visionPick === v.id ? "true" : undefined}
+                    onClick={() => {
+                      setVisionPick(v.id);
+                      engineRef.current?.clearVision();
+                      if (v.pieces.length) engineRef.current?.previewVision(v.pieces);
+                      engineRef.current?.previewGraphic(v.graphic ?? null);
+                    }}
+                  >
+                    {v.wish}
+                    <span>{v.kind || "law"} · {v.author}{v.pr_url ? " · GitHub PR" : ""}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {visionPick && (
+              <div className="hud-slim-row inhabit-crew">
+                {visions.find((x) => x.id === visionPick)?.pr_url && (
+                  <a
+                    className="hud-slim-textbtn inhabit-go"
+                    href={visions.find((x) => x.id === visionPick)?.pr_url || "#"}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Open GitHub PR
+                  </a>
+                )}
+                {(liveLine.startsWith("Live host") || liveLine.startsWith("Solo")) && (
+                  <>
+                    <button
+                      type="button"
+                      className="hud-slim-textbtn inhabit-go"
+                      onClick={async () => {
+                        const v = visions.find((x) => x.id === visionPick);
+                        if (!v) return;
+                        engineRef.current?.acceptPieces(v.pieces, v.line);
+                        await decideVision(v.id, "accept");
+                        setVisions(await fetchVisions());
+                        setVisionPick(null);
+                      }}
+                    >
+                      Accept into live land
+                    </button>
+                    <button
+                      type="button"
+                      className="hud-slim-textbtn inhabit-go"
+                      onClick={async () => {
+                        await decideVision(visionPick, "refuse");
+                        engineRef.current?.clearVision();
+                        setVisions(await fetchVisions());
+                        setVisionPick(null);
+                      }}
+                    >
+                      Refuse
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       )}
       {debugOpen && !title && <DebugSheet hud={hud} onClose={() => setDebugOpen(false)} />}
     </div>
