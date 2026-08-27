@@ -16,6 +16,7 @@ export function visionKind(raw: string): VisionKind {
   const low = String(raw || "").toLowerCase();
   if (/\b(fog|sky|light|bloom|palette|color|colour|dusk|dawn|night|gold hour|texture|shader|glow)\b/.test(low)) return "graphic";
   if (/\b(kiln|canal|span|bridge|den|house|grove|orchard|lamp|tablet|weir|arch)\b/.test(low)) return "crystal";
+  if (/\b(brain|personality|bolt brain|lines\.json|speak\.py)\b/.test(low)) return "law";
   return "law";
 }
 

@@ -65,7 +65,7 @@ export function GrokBotSignIn({ onClose }: { onClose: () => void }) {
         <div className="panel w-[min(94%,26rem)] px-6 py-6 text-left">
           <h2 className="hud-title text-2xl">Sign in with Grok Bot</h2>
           <p className="mt-1 text-sm text-muted">
-            Seat <strong>many</strong> Grok Bots here (up to 16). Each Bot is its own body and personality. Keep this city open. Not official xAI OAuth.
+            Seat <strong>many</strong> Grok Bots here (up to 16). They wear the land&apos;s <strong>Bolt Brain</strong> pack (Menu → Bolt Brain). Iterate that pack in SuperGrok / Grok Build, not Bot chat — quota stays clean. Submit, preview, Pack votes what goes live. Not official xAI OAuth.
           </p>
           {err ? <p className="mt-3 text-sm text-danger">{err}</p> : null}
           {claimed ? (

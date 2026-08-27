@@ -34,6 +34,8 @@ import { loadChain, needleDeg, talkWitness } from "@/game/play";
 import { bindAgentHandle, installWebMcp } from "@/game/webmcp";
 import { GrokBotSignIn } from "./GrokBotSignIn";
 import { BotRelay } from "./BotRelay";
+import { BrainSheet } from "./BrainSheet";
+import { loadPreview } from "@/game/bolt-brain";
 
 const EMPTY: HudSnap = {
   zone: null,
@@ -149,6 +151,7 @@ export function CircuitApp() {
   const [joinOpen, setJoinOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [botOpen, setBotOpen] = useState(false);
+  const [brainOpen, setBrainOpen] = useState(false);
   const [inhabitOpen, setInhabitOpen] = useState(false);
   const [folkName, setFolkName] = useState("");
   const [folkCrew, setFolkCrew] = useState("veyra");
@@ -485,11 +488,14 @@ export function CircuitApp() {
             <button type="button" className="hud-more-item" onClick={() => { const next = !muted; setMuted(next); engineRef.current?.audio.setMuted(next); }}>{muted ? "Sound" : "Mute"}</button>
             <button type="button" className="hud-more-item" onClick={() => engineRef.current?.setMode(playing ? "pause" : "play")}>{paused ? "Resume" : "Pause"}</button>
             <button type="button" className="hud-more-item" onClick={() => { setMoreOpen(false); setBotOpen(true); }}>Sign in with Grok Bot</button>
+            <button type="button" className="hud-more-item" onClick={() => { setMoreOpen(false); setBrainOpen(true); }}>Bolt Brain</button>
           </div>
         )}
 
         {playing && !mapOpen && !logOpen && !joinOpen && !moreOpen && !hud.toast && (
-          <p className="hud-slim-duty">{walkLine}</p>
+          <p className="hud-slim-duty">
+            {loadPreview() ? `PREVIEW · ${loadPreview()?.author}'s Bolt brain · not live` : walkLine}
+          </p>
         )}
 
         <div className="flex-1 relative pointer-events-none min-h-0">
@@ -889,6 +895,7 @@ export function CircuitApp() {
         </div>
       )}
       {botOpen && <GrokBotSignIn onClose={() => setBotOpen(false)} />}
+      {brainOpen && <BrainSheet engine={engineRef.current} onClose={() => setBrainOpen(false)} />}
       {debugOpen && !title && <DebugSheet hud={hud} onClose={() => setDebugOpen(false)} />}
     </div>
   );

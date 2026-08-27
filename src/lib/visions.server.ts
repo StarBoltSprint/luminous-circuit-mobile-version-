@@ -18,7 +18,7 @@ const proposeSchema = z.object({
   author: ID,
   wish: z.string().min(8).max(800),
   line: z.string().max(240).optional(),
-  kind: z.enum(["crystal", "graphic", "law"]).optional(),
+  kind: z.enum(["crystal", "graphic", "law", "brain"]).optional(),
   pieces: z.array(pieceSchema).max(6).optional(),
   graphic: z.object({ fog: z.number(), density: z.number() }).optional(),
 });

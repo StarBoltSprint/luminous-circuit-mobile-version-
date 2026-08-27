@@ -19,6 +19,7 @@ import { gradeHowl, howlMult, gradeLine, aimingParent, markStood, dutyDone, talk
 import { cityRig, keeperRig, mixRig, EYE_SEC, clampPull } from "./eye";
 import { canBirthToday, markBornToday, canPeerBirth, markPeerBirth, canPeerGrow, markPeerGrow, interpretGrow, loadFolkBook, writeFolkBook, writeLastWish, skillOf, interpretWish, type FolkPost } from "./inhabit";
 import { tickCrafts, grokBuildBrief } from "./crafts";
+import { pickLine, activePack, loadDraft, saveDraft, submitDraft, voteSubmit, makeLive, setPreview, loadQueue } from "./bolt-brain";
 
 export type HudSnap = {
   zone: string | null;
@@ -96,7 +97,19 @@ export type EngineHandle = {
   clearVision: () => void;
   acceptPieces: (pieces: { shape: string; x: number; z: number; h?: number; r?: number; rot?: number; mat?: string }[], line: string) => { ok: boolean; line: string };
   folkBook: () => FolkPost[];
-  applyBotCmd: (cmd: { kind: string; text?: string; x?: number; z?: number; keeper?: string }) => { ok: boolean; line: string };
+  applyBotCmd: (cmd: {
+    kind: string;
+    text?: string;
+    x?: number;
+    z?: number;
+    keeper?: string;
+    botId?: string;
+    name?: string;
+    personality?: string;
+    id?: string;
+    author?: string;
+  }) => { ok: boolean; line: string };
+  applyBrainPack: (pack: import("./bolt-brain").BoltBrainPack | null) => void;
   input: InputHandle;
   audio: ReturnType<typeof createAudio>;
 };
@@ -1479,9 +1492,50 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 				emitHud();
 				return { ok: true, line: c.thought };
 			}
+			if (kind === "brain_set") {
+				const d = loadDraft();
+				const person = String(cmd.personality || cmd.text || "").trim().slice(0, 280);
+				if (person) d.personality = person;
+				if (cmd.name) d.name = String(cmd.name).slice(0, 32);
+				saveDraft(d);
+				showToast("Bolt brain draft saved. SuperGrok / this sheet — not Grok Bot quota.");
+				emitHud();
+				return { ok: true, line: "Draft saved." };
+			}
+			if (kind === "brain_submit") {
+				const sent = submitDraft(String(cmd.author || cmd.name || "walker"), String(cmd.text || cmd.personality || ""));
+				if (!sent.ok || !sent.row) return { ok: false, line: sent.error || "Submit failed." };
+				setPreview(sent.row);
+				showToast(`Brain submitted. PREVIEW on. Chat can vote it live.`);
+				emitHud();
+				return { ok: true, line: `Submitted ${sent.id}` };
+			}
+			if (kind === "brain_preview") {
+				const row = loadQueue().find((r) => r.id === cmd.id || r.id === cmd.text);
+				if (!row) return { ok: false, line: "No such submit." };
+				setPreview(row);
+				showToast(`PREVIEW · ${row.author}'s ${row.pack.name}`);
+				emitHud();
+				return { ok: true, line: `Preview ${row.id}` };
+			}
+			if (kind === "brain_vote") {
+				const row = voteSubmit(String(cmd.id || cmd.text || ""));
+				if (!row) return { ok: false, line: "No such submit." };
+				showToast(`Chat vote on ${row.pack.name}: ${row.votes}`);
+				emitHud();
+				return { ok: true, line: `${row.votes} votes` };
+			}
+			if (kind === "brain_live") {
+				const r = makeLive(String(cmd.id || cmd.text || ""));
+				if (!r.ok) return { ok: false, line: r.error || "Could not go live." };
+				setPreview(null);
+				showToast("That Bolt brain is live on this land.");
+				emitHud();
+				return { ok: true, line: "Live." };
+			}
 			if (kind === "say") {
 				const c = ensure();
-				const line = String(cmd.text || "").trim().slice(0, 140);
+				const line = String(cmd.text || pickLine(activePack(), "crowd") || "").trim().slice(0, 140);
 				if (!line) return { ok: false, line: "Nothing to say." };
 				if (c) {
 					c.thought = line;
@@ -1508,7 +1562,7 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 					c.job = "hail";
 					c.timer = 6;
 				}
-				showToast(`${c?.mind.name || "Grok Bot"} howls. The city hears.`);
+				showToast(`${c?.mind.name || "Grok Bot"} howls. ${pickLine(activePack(), "howl")}`);
 				audio.howl();
 				emitHud();
 				return { ok: true, line: "Howl landed." };
@@ -1540,6 +1594,21 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 				return { ok: true, line: "Bot hidden." };
 			}
 			return { ok: false, line: `Unknown bot command ${kind}` };
+		},
+		applyBrainPack(pack) {
+			for (const c of world.citizens) {
+				if (!String(c.mind.id).startsWith("grok-bot")) continue;
+				if (!pack) {
+					c.thought = c.mind.role || "Paired Grok Bot";
+					continue;
+				}
+				const line = pickLine(pack, "crowd");
+				c.mind.lines = [pack.personality, line, pickLine(pack, "pack")];
+				c.thought = pack.personality.slice(0, 80);
+				c.intent = line;
+			}
+			showToast(pack ? `PREVIEW · ${pack.name}. ${pack.personality.slice(0, 64)}` : "Bolt brain preview off.");
+			emitHud();
 		},
 		birthFolk(name, crew) {
 			if (liveRole === "guest" && typeof liveSendWish === "function") {

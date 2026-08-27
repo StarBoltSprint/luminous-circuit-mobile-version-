@@ -1,4 +1,16 @@
 /** WebMCP + window.__LC_TOOLS__ so Grok Bot can drive Core Spire from the play page. */
+import {
+  activePack,
+  grokBuildBrief,
+  loadDraft,
+  loadQueue,
+  makeLive,
+  pickLine,
+  saveDraft,
+  setPreview,
+  submitDraft,
+  voteSubmit,
+} from "./bolt-brain";
 
 export type AgentHud = {
   mode?: string;
@@ -101,6 +113,100 @@ const TOOLS: Tool[] = [
         play: "https://starboltsprint.github.io/luminous-circuit-mobile-version-/",
         llms: "https://starboltsprint.github.io/luminous-circuit-mobile-version-/llms.txt",
         agent: "https://starboltsprint.github.io/luminous-circuit-mobile-version-/agent.md",
+        brain: "https://starboltsprint.github.io/luminous-circuit-mobile-version-/brain/bolt.json",
+      };
+    },
+  },
+  {
+    name: "get_bolt_brain",
+    description:
+      "Read the Bolt brain pack this land is wearing (personality + lines). Use this. Do not mill in Grok Bot chat — that burns Bot quota. Iterate with SuperGrok / Grok Build or the in-game Bolt Brain sheet.",
+    execute() {
+      const pack = activePack();
+      return { pack, quota: "Iterate with SuperGrok or Menu → Bolt Brain. Never Grok Bot mill." };
+    },
+  },
+  {
+    name: "draft_brain",
+    description: "Set the local Bolt brain draft (personality). No LLM. No Grok Bot quota.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        personality: { type: "string" },
+        name: { type: "string" },
+      },
+    },
+    execute(args) {
+      const d = loadDraft();
+      if (args?.personality) d.personality = String(args.personality).slice(0, 280);
+      if (args?.name) d.name = String(args.name).slice(0, 32);
+      saveDraft(d);
+      return { ok: true, pack: d, next: "submit_brain when the player likes it." };
+    },
+  },
+  {
+    name: "submit_brain",
+    description: "Submit the local Bolt brain draft to the city. Puts PREVIEW on. Chat votes go-live. No Grok Bot mill.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        author: { type: "string" },
+        note: { type: "string" },
+      },
+    },
+    execute(args) {
+      const sent = submitDraft(String(args?.author || "walker"), String(args?.note || ""));
+      if (!sent.ok || !sent.row) return { ok: false, error: sent.error };
+      setPreview(sent.row);
+      return { ok: true, id: sent.id, preview: true, vote: "Players tap Chat: go live, then Put live." };
+    },
+  },
+  {
+    name: "list_brain_submits",
+    description: "Pending Bolt brain submits. Preview, vote, or put live.",
+    execute() {
+      return { submits: loadQueue().filter((r) => r.status === "pending") };
+    },
+  },
+  {
+    name: "preview_brain",
+    description: "Wear a submitted Bolt brain as PREVIEW on this land. Not live until Put live.",
+    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+    execute(args) {
+      const row = loadQueue().find((r) => r.id === args?.id);
+      if (!row) return { ok: false, error: "No such submit." };
+      setPreview(row);
+      return { ok: true, preview: true, name: row.pack.name, author: row.author };
+    },
+  },
+  {
+    name: "vote_brain_live",
+    description: "Chat vote: this submitted brain should go live.",
+    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+    execute(args) {
+      const row = voteSubmit(String(args?.id || ""));
+      if (!row) return { ok: false, error: "No such submit." };
+      return { ok: true, votes: row.votes, id: row.id };
+    },
+  },
+  {
+    name: "put_brain_live",
+    description: "Put a submitted Bolt brain live on this land after preview (and votes).",
+    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+    execute(args) {
+      const r = makeLive(String(args?.id || ""));
+      return r.ok ? { ok: true } : { ok: false, error: r.error };
+    },
+  },
+  {
+    name: "how_to_iterate_brain",
+    description: "How a player iterates the Bolt brain without burning Grok Bot quota.",
+    execute() {
+      return {
+        quota: "Grok Bot is for driving the city (join, appear, howl). Do not mill the brain in Bot chat.",
+        iterate: "SuperGrok / Grok Build CLI, or Menu → Bolt Brain in the game. Copy Grok Build prompt from that sheet.",
+        brief: grokBuildBrief(loadDraft()),
+        sample: pickLine(activePack(), "help"),
       };
     },
   },

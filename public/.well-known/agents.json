@@ -13,6 +13,8 @@
     { "name": "get_city_hud", "description": "Read zone, vault, nearby keeper, toast." },
     { "name": "talk_nearby", "description": "Talk to the nearest keeper." },
     { "name": "howl", "description": "Hold a Hub Howl for about 1.1 seconds." },
-    { "name": "open_map", "description": "Open the Circuit map." }
+    { "name": "open_map", "description": "Open the Circuit map." },
+    { "name": "get_bolt_brain", "description": "Wear the Bolt brain pack. Do not mill it in Grok Bot chat." },
+    { "name": "submit_brain", "description": "Submit a Bolt brain draft. Preview, then chat votes go-live." }
   ]
 }
