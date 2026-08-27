@@ -54,7 +54,7 @@ export function GrokBotSignIn({ onClose }: { onClose: () => void }) {
           {err ? <p className="mt-3 text-sm text-danger">{err}</p> : null}
           {claimed ? (
             <p className="mt-4 text-sm text-accent">
-              Signed in{row.botName ? ` as ${row.botName}` : ""}. Howl {row.code}.
+              Signed in{row.botName ? ` as ${row.botName}` : ""}. Howl {row.code}. Keep this city open — then tell the Bot: appear, walk, say, howl, talk.
             </p>
           ) : (
             <ol className="mt-4 list-decimal space-y-3 pl-5 text-sm">

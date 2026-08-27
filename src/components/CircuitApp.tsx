@@ -33,6 +33,7 @@ import { buzz } from "@/game/haptics";
 import { loadChain, needleDeg, talkWitness } from "@/game/play";
 import { bindAgentHandle, installWebMcp } from "@/game/webmcp";
 import { GrokBotSignIn } from "./GrokBotSignIn";
+import { BotRelay } from "./BotRelay";
 
 const EMPTY: HudSnap = {
   zone: null,
@@ -562,6 +563,7 @@ export function CircuitApp() {
       </div>
 
       {playing && <CircuitLive engine={engineRef.current} onHud={setLiveLine} />}
+      {playing && <BotRelay engine={engineRef.current} hud={hud} />}
 
       {bootError && (
         <button

@@ -48,3 +48,25 @@ export async function pollPair(code: string): Promise<PairRow> {
   writePair(row);
   return row;
 }
+
+export type BotCmd = { id: string; kind: string; text?: string; x?: number; z?: number; keeper?: string };
+
+export async function pushHud(code: string, hud: Record<string, unknown>): Promise<BotCmd[]> {
+  const res = await fetch(`${CIRCUIT_MCP}/v1/session/${encodeURIComponent(code)}/hud`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ hud }),
+  });
+  if (!res.ok) return [];
+  const body = (await res.json()) as { cmds?: BotCmd[] };
+  return body.cmds ?? [];
+}
+
+export async function ackCmds(code: string, ids: string[]): Promise<void> {
+  if (!ids.length) return;
+  await fetch(`${CIRCUIT_MCP}/v1/session/${encodeURIComponent(code)}/ack`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ ids }),
+  }).catch(() => {});
+}

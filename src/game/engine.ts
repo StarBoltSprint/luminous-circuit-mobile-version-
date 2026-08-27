@@ -6,7 +6,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { createAudio } from "./audio";
 import { createInput, type InputHandle } from "./input";
-import { HUB, LORE } from "./lore";
+import { HUB, LORE, DISTRICTS } from "./lore";
 import { loadSave, writeSave, type SaveData, type SeasonLine } from "./save";
 import { jobLabel, talkReply, assignHonor, callGather, callWard, noteLive, takeLive, pulseCityMind, applyCityBrief, crewLine, kilnSites, takeKilnFires, marketSnap, type LiveEvent, type BriefOrder } from "./living";
 import { buildWorld } from "./world";
@@ -96,6 +96,7 @@ export type EngineHandle = {
   clearVision: () => void;
   acceptPieces: (pieces: { shape: string; x: number; z: number; h?: number; r?: number; rot?: number; mat?: string }[], line: string) => { ok: boolean; line: string };
   folkBook: () => FolkPost[];
+  applyBotCmd: (cmd: { kind: string; text?: string; x?: number; z?: number; keeper?: string }) => { ok: boolean; line: string };
   input: InputHandle;
   audio: ReturnType<typeof createAudio>;
 };
@@ -1403,6 +1404,130 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 		},
 		folkBook() {
 			return loadFolkBook();
+		},
+		applyBotCmd(cmd) {
+			const BOT = "grok-bot";
+			const name = String(cmd?.text || "Grok Bot").slice(0, 32) || "Grok Bot";
+			const ensure = () => {
+				let c = world.citizens.find((o) => o.mind.id === BOT);
+				if (!c) {
+					world.addCitizen({
+						id: BOT,
+						name,
+						role: "Paired Grok Bot",
+						x: player.x + 8,
+						z: player.z - 6,
+						file: "facet-cyan.png",
+						glow: 6224594,
+						lines: ["I am your Grok Bot in Core Spire.", "Not official xAI. Crystal never chrome."],
+					});
+					c = world.citizens.find((o) => o.mind.id === BOT);
+				}
+				if (c && name && name !== "Grok Bot") c.mind.name = name;
+				return c;
+			};
+			const route = (c, x, z) => {
+				c.tx = x;
+				c.tz = z;
+				c.job = "walk";
+				c.timer = 22;
+				c.waypoints = [{ x, z }];
+			};
+			const kind = String(cmd?.kind || "");
+			if (kind === "appear") {
+				const c = ensure();
+				if (!c) return { ok: false, line: "Could not stand the Bot." };
+				c.x = player.x + 8;
+				c.z = player.z - 6;
+				c.thought = "I landed in your city.";
+				showToast(`${c.mind.name} stands with you.`);
+				audio.grow();
+				emitHud();
+				return { ok: true, line: "Bot stands beside you." };
+			}
+			if (kind === "walk") {
+				const c = ensure();
+				if (!c) return { ok: false, line: "Bot is not in the city." };
+				let x = Number(cmd.x);
+				let z = Number(cmd.z);
+				const kid = String(cmd.keeper || "").toLowerCase();
+				if (kid) {
+					const den = DISTRICTS.find((d) => d.keeper === kid);
+					if (den) { x = den.x; z = den.z; }
+					else if (kid === "veyra") { x = 0; z = 56; }
+				}
+				if (!Number.isFinite(x) || !Number.isFinite(z)) {
+					x = player.x;
+					z = player.z;
+				}
+				route(c, x, z);
+				c.thought = kid ? `Walking to ${kid}` : "Walking the Circuit";
+				c.intent = c.thought;
+				showToast(`${c.mind.name} walks.`);
+				emitHud();
+				return { ok: true, line: c.thought };
+			}
+			if (kind === "say") {
+				const c = ensure();
+				const line = String(cmd.text || "").trim().slice(0, 140);
+				if (!line) return { ok: false, line: "Nothing to say." };
+				if (c) {
+					c.thought = line;
+					c.intent = line;
+					c.job = "hail";
+					c.timer = 4;
+					c.yaw = Math.atan2(player.x - c.x, player.z - c.z);
+				}
+				showToast(`${c?.mind.name || "Grok Bot"}: ${line}`);
+				audio.talk();
+				emitHud();
+				return { ok: true, line };
+			}
+			if (kind === "howl") {
+				const c = ensure();
+				const x = c ? c.x : player.x;
+				const z = c ? c.z : player.z;
+				const zone = DISTRICTS.find((d) => Math.hypot(d.x - x, d.z - z) < d.radius);
+				const keeper = zone?.keeper ?? (Math.hypot(x, z) < 80 ? "veyra" : null);
+				callGather(world.citizens);
+				if (keeper) callWard(world.citizens, keeper, x, z);
+				if (c) {
+					c.thought = "Howl from leftover air.";
+					c.job = "hail";
+					c.timer = 6;
+				}
+				showToast(`${c?.mind.name || "Grok Bot"} howls. The city hears.`);
+				audio.howl();
+				emitHud();
+				return { ok: true, line: "Howl landed." };
+			}
+			if (kind === "talk") {
+				const c = ensure();
+				if (!c) return { ok: false, line: "Bot is not in the city." };
+				let best = null;
+				let bestD = 22;
+				for (const o of world.citizens) {
+					if (o === c) continue;
+					const d = Math.hypot(o.x - c.x, o.z - c.z);
+					if (d < bestD) { bestD = d; best = o; }
+				}
+				if (!best) return { ok: false, line: "No keeper in reach of the Bot." };
+				const line = talkReply(best, c.x, c.z, howls);
+				c.thought = `Heard ${best.mind.name.split(" ")[0]}`;
+				c.yaw = Math.atan2(best.x - c.x, best.z - c.z);
+				showToast(line);
+				audio.talk();
+				emitHud();
+				return { ok: true, line };
+			}
+			if (kind === "hide") {
+				const c = world.citizens.find((o) => o.mind.id === BOT);
+				if (c) { c.x = 4000; c.z = 4000; c.job = "idle"; }
+				showToast("Grok Bot left the land.");
+				emitHud();
+				return { ok: true, line: "Bot hidden." };
+			}
+			return { ok: false, line: `Unknown bot command ${kind}` };
 		},
 		birthFolk(name, crew) {
 			if (liveRole === "guest" && typeof liveSendWish === "function") {
