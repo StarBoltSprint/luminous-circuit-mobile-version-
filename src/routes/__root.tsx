@@ -33,12 +33,20 @@ export const Route = createRootRoute({
         content:
           "Walk the living crystal city of the Luminous Circuit. Offer intention at the Core Spire.",
       },
+      {
+        name: "agent-capabilities",
+        content:
+          "Land in Core Spire, read HUD, Howl, talk to keepers. See /llms.txt and /agent.md.",
+      },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
       { rel: "stylesheet", href: appCss },
       { rel: "manifest", href: "/__grok/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/__grok/icon-180.png" },
+      { rel: "alternate", type: "text/plain", href: "/llms.txt", title: "LLM-readable information" },
+      { rel: "alternate", type: "text/markdown", href: "/agent.md", title: "Grok Bot how-to" },
+      { rel: "alternate", type: "application/json", href: "/.well-known/agents.json", title: "Agent actions" },
     ],
     styles: [{ children: CRITICAL }],
   }),

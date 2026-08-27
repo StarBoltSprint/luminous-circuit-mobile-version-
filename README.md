@@ -17,6 +17,8 @@ Story beat: *Land true. The circuit answers.*
 
 Live: [starboltsprint.github.io/luminous-circuit-mobile-version-](https://starboltsprint.github.io/luminous-circuit-mobile-version-/)
 
+**Grok Bot:** this vessel is agent-readable. [`llms.txt`](https://starboltsprint.github.io/luminous-circuit-mobile-version-/llms.txt) · [`agent.md`](https://starboltsprint.github.io/luminous-circuit-mobile-version-/agent.md). WebMCP tools on the play page (`land_in_city`, `get_city_hud`, `talk_nearby`, `howl`). Not official xAI OAuth — Bots drive the city from their browser / cloud computer.
+
 
 ## Economy
 

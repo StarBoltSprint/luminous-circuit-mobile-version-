@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# https://starboltsprint.github.io/luminous-circuit-mobile-version-/llms.txt
+# https://starboltsprint.github.io/luminous-circuit-mobile-version-/agent.md
+# https://starboltsprint.github.io/luminous-circuit-mobile-version-/.well-known/agents.json
