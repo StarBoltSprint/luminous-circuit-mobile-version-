@@ -32,6 +32,7 @@ import { fetchVisions, proposeVision, decideVision, type Vision } from "@/game/v
 import { buzz } from "@/game/haptics";
 import { loadChain, needleDeg, talkWitness } from "@/game/play";
 import { bindAgentHandle, installWebMcp } from "@/game/webmcp";
+import { GrokBotSignIn } from "./GrokBotSignIn";
 
 const EMPTY: HudSnap = {
   zone: null,
@@ -146,6 +147,7 @@ export function CircuitApp() {
   const [awayOpen, setAwayOpen] = useState(true);
   const [joinOpen, setJoinOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [botOpen, setBotOpen] = useState(false);
   const [inhabitOpen, setInhabitOpen] = useState(false);
   const [folkName, setFolkName] = useState("");
   const [folkCrew, setFolkCrew] = useState("veyra");
@@ -481,7 +483,7 @@ export function CircuitApp() {
             <button type="button" className="hud-more-item" onClick={() => { setMoreOpen(false); setMapOpen(false); setLogOpen(false); setJoinOpen(true); }}>Join</button>
             <button type="button" className="hud-more-item" onClick={() => { const next = !muted; setMuted(next); engineRef.current?.audio.setMuted(next); }}>{muted ? "Sound" : "Mute"}</button>
             <button type="button" className="hud-more-item" onClick={() => engineRef.current?.setMode(playing ? "pause" : "play")}>{paused ? "Resume" : "Pause"}</button>
-            <a className="hud-more-item" href="./agent.md">Grok Bot</a>
+            <button type="button" className="hud-more-item" onClick={() => { setMoreOpen(false); setBotOpen(true); }}>Sign in with Grok Bot</button>
           </div>
         )}
 
@@ -575,14 +577,14 @@ export function CircuitApp() {
           <span className="title-kicker">Luminous Circuit</span>
           <span className="title-hero">Tap to retry</span>
           <span className="title-sub">{bootError}</span>
-          <a
+          <span
             className="grok-bot-btn"
-            href="./agent.md"
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => e.stopPropagation()}
+            role="button"
+            onPointerDown={(e) => { e.stopPropagation(); e.preventDefault(); setBotOpen(true); }}
+            onClick={(e) => { e.stopPropagation(); e.preventDefault(); setBotOpen(true); }}
           >
-            Drive with Grok Bot
-          </a>
+            Sign in with Grok Bot
+          </span>
         </button>
       )}
 
@@ -884,6 +886,7 @@ export function CircuitApp() {
           </div>
         </div>
       )}
+      {botOpen && <GrokBotSignIn onClose={() => setBotOpen(false)} />}
       {debugOpen && !title && <DebugSheet hud={hud} onClose={() => setDebugOpen(false)} />}
     </div>
   );
