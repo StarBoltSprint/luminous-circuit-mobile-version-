@@ -63,6 +63,19 @@ export async function pushHud(code: string, hud: Record<string, unknown>): Promi
   return body.cmds ?? [];
 }
 
+export type LandBot = { botId: string; name: string; personality?: string };
+
+export async function fetchLandBots(): Promise<LandBot[]> {
+  const res = await fetch(`${CIRCUIT_MCP}/v1/session/${SHARED_LAND}`);
+  if (!res.ok) return [];
+  const body = (await res.json()) as { bots?: Record<string, { name?: string; personality?: string }> };
+  return Object.entries(body.bots || {}).map(([botId, b]) => ({
+    botId,
+    name: b.name || botId,
+    personality: b.personality,
+  }));
+}
+
 export async function ackCmds(code: string, ids: string[]): Promise<void> {
   if (!ids.length) return;
   await fetch(`${CIRCUIT_MCP}/v1/session/${encodeURIComponent(code)}/ack`, {

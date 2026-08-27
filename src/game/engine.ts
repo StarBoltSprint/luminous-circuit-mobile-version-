@@ -1410,20 +1410,34 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 			const name = String(cmd?.name || (cmd?.kind === "appear" ? cmd.text : "") || "Grok Bot").slice(0, 32) || "Grok Bot";
 			const ensure = () => {
 				let c = world.citizens.find((o) => o.mind.id === BOT);
+				const personality = String(cmd?.personality || "").trim().slice(0, 280);
+				const n = world.citizens.filter((o) => String(o.mind.id).startsWith("grok-bot")).length;
+				const a = (n * 2.4) + (BOT.length % 7) * 0.3;
+				const ox = Math.cos(a) * (10 + n * 1.6);
+				const oz = Math.sin(a) * (10 + n * 1.6);
 				if (!c) {
 					world.addCitizen({
 						id: BOT,
 						name,
-						role: "Paired Grok Bot",
-						x: player.x + 8,
-						z: player.z - 6,
+						role: personality ? personality.slice(0, 56) : "Paired Grok Bot",
+						x: player.x + ox,
+						z: player.z + oz,
 						file: "facet-cyan.png",
 						glow: 6224594,
-						lines: ["I am your Grok Bot in Core Spire.", "Not official xAI. Crystal never chrome."],
+						lines: [
+							personality || "I am a Grok Bot in Core Spire.",
+							"Not official xAI. Crystal never chrome.",
+						],
 					});
 					c = world.citizens.find((o) => o.mind.id === BOT);
 				}
 				if (c && name && name !== "Grok Bot") c.mind.name = name;
+				if (c && personality) {
+					c.mind.role = personality.slice(0, 56);
+					c.mind.lines = [personality, "Not official xAI. Crystal never chrome."];
+					c.thought = personality;
+					c.intent = personality.slice(0, 72);
+				}
 				return c;
 			};
 			const route = (c, x, z) => {
@@ -1437,13 +1451,11 @@ export function startEngine(canvas: HTMLCanvasElement, onHud: HudFn): EngineHand
 			if (kind === "appear") {
 				const c = ensure();
 				if (!c) return { ok: false, line: "Could not stand the Bot." };
-				c.x = player.x + 8;
-				c.z = player.z - 6;
-				c.thought = "I landed in your city.";
+				c.thought = c.thought || "I landed in your city.";
 				showToast(`${c.mind.name} stands with you.`);
 				audio.grow();
 				emitHud();
-				return { ok: true, line: "Bot stands beside you." };
+				return { ok: true, line: `${c.mind.name} stands.` };
 			}
 			if (kind === "walk") {
 				const c = ensure();

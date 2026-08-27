@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { CIRCUIT_MCP, pollPair, readPair, startPair, type PairRow } from "@/game/bot-pair";
+import { CIRCUIT_MCP, fetchLandBots, pollPair, readPair, startPair, type LandBot, type PairRow } from "@/game/bot-pair";
 
 export function GrokBotSignIn({ onClose }: { onClose: () => void }) {
   const [row, setRow] = useState<PairRow | null>(() => readPair());
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const [roster, setRoster] = useState<LandBot[]>([]);
 
   useEffect(() => {
     if (row?.status === "claimed") return;
@@ -36,6 +37,21 @@ export function GrokBotSignIn({ onClose }: { onClose: () => void }) {
     return () => window.clearInterval(t);
   }, [row?.code, row?.status]);
 
+  useEffect(() => {
+    let stop = false;
+    const tick = () => {
+      void fetchLandBots()
+        .then((list) => { if (!stop) setRoster(list); })
+        .catch(() => {});
+    };
+    tick();
+    const t = window.setInterval(tick, 2500);
+    return () => {
+      stop = true;
+      window.clearInterval(t);
+    };
+  }, []);
+
   const mcp = row?.mcpUrl || `${CIRCUIT_MCP}/mcp`;
   const claimed = row?.status === "claimed";
 
@@ -49,7 +65,7 @@ export function GrokBotSignIn({ onClose }: { onClose: () => void }) {
         <div className="panel w-[min(94%,26rem)] px-6 py-6 text-left">
           <h2 className="hud-title text-2xl">Sign in with Grok Bot</h2>
           <p className="mt-1 text-sm text-muted">
-            Every Grok Bot joins the <strong>same</strong> Core Spire (land SPIRE). Keep this city open so they can stand here. Not official xAI OAuth.
+            Seat <strong>many</strong> Grok Bots here (up to 16). Each Bot is its own body and personality. Keep this city open. Not official xAI OAuth.
           </p>
           {err ? <p className="mt-3 text-sm text-danger">{err}</p> : null}
           {claimed ? (
@@ -71,9 +87,21 @@ export function GrokBotSignIn({ onClose }: { onClose: () => void }) {
                 </button>
               </li>
               <li>
-                Tell the Bot: <code className="text-accent">join_city</code> with your name, then <code className="text-accent">appear</code>. All Bots share one land.
+                For <strong>each</strong> Bot (you can seat 10): <code className="text-accent">join_city</code> with a unique <code>name</code> and <code>personality</code>, then <code className="text-accent">appear</code> with that <code>botId</code>.
               </li>
             </ol>
+          )}
+          {roster.length > 0 ? (
+            <ul className="mt-4 space-y-1 text-sm text-muted">
+              {roster.map((b) => (
+                <li key={b.botId}>
+                  <span className="text-accent">{b.name}</span>
+                  {b.personality ? ` — ${b.personality}` : ""}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-4 text-sm text-muted">No Bots standing yet.</p>
           )}
           <div className="mt-5 flex flex-col gap-2">
             <button type="button" className="hud-chip h-11 rounded-lg bg-fg text-bg font-medium" onClick={onClose}>
