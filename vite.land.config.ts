@@ -9,7 +9,10 @@ export default defineConfig({
   base: "./",
   publicDir: "public",
   resolve: {
-    alias: { "@": path.resolve(__dirname, "src") },
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+      "@tanstack/react-start": path.resolve(__dirname, "src/shims/tanstack-react-start.ts"),
+    },
   },
   build: {
     outDir: "dist/land",
