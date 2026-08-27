@@ -173,7 +173,7 @@ export type CircuitWorld = {
   dispose: () => void;
 };
 
-const TEX = "/luminous-circuit";
+const TEX = `${import.meta.env.BASE_URL}luminous-circuit`.replace(/\/+$/, "");
 
 function hash2(i, s) {
 	const n = Math.sin(i * 127.1 + s * 311.7) * 43758.5453;

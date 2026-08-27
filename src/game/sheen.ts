@@ -14,7 +14,7 @@ const SHEEN_R = SKY_R * 0.98;
 const SHEEN_OP = 0.34;
 const SHEEN_OP_COARSE = 0.22;
 const PULSE = 0.11;
-const TEX = "/luminous-circuit/sky-veil.jpg";
+const TEX = `${import.meta.env.BASE_URL}luminous-circuit/sky-veil.jpg`.replace(/\/{2,}/g, "/");
 
 function loadVeil() {
   const map = new THREE.TextureLoader().load(TEX);

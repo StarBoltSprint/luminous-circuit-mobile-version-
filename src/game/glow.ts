@@ -19,7 +19,7 @@ const DISC_OP_MIN = 0.48;
 const DISC_OP_MAX = 0.78;
 const BALL_OP = 0.38;
 const PULSE = 0.48;
-const TEX = "/luminous-circuit/sky-core-glow.jpg";
+const TEX = `${import.meta.env.BASE_URL}luminous-circuit/sky-core-glow.jpg`.replace(/\/{2,}/g, "/");
 
 function loadGlow() {
   const map = new THREE.TextureLoader().load(TEX);
