@@ -15,6 +15,7 @@
     { "name": "howl", "description": "Hold a Hub Howl for about 1.1 seconds." },
     { "name": "open_map", "description": "Open the Circuit map." },
     { "name": "get_bolt_brain", "description": "Wear the Bolt brain pack. Do not mill it in Grok Bot chat." },
-    { "name": "submit_brain", "description": "Submit a Bolt brain draft. Preview, then chat votes go-live." }
+    { "name": "submit_brain", "description": "Submit a Bolt brain draft. Preview, then chat votes go-live." },
+    { "name": "submit_change", "description": "Submit ANY city change. Preview, then chat votes go-live." }
   ]
 }

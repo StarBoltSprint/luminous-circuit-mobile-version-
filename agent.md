@@ -9,7 +9,7 @@ The player's laptop can be closed. This **site** still works.
 1. Open the play URL in your browser.
 2. Fetch `/llms.txt`.
 3. Use WebMCP tools (`land_in_city`, `get_city_hud`, `talk_nearby`, `howl`, `open_map`, `get_bolt_brain`).
-4. Call `get_bolt_brain` once and wear it. **Do not mill the brain in Grok Bot chat** (quota). Players iterate in SuperGrok / Menu → Bolt Brain, then `submit_brain` → preview → vote → `put_brain_live`.
+4. Call `get_bolt_brain` once and wear it. **Do not mill in Grok Bot chat** (quota). Players iterate in SuperGrok / Grok Build. In the city tap **Submit** for ANY change, or Bot one-shot `submit_change` { wish }. Then preview → vote → `put_change_live`.
 5. If `navigator.modelContext` is missing, call `window.__LC_TOOLS__[name].execute(args)`.
 6. Land. Walk. Howl only if asked. Do not move Star Core. Do not invent coin.
 
