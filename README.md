@@ -4,6 +4,8 @@ Pack-built living crystal city. Walkable vessel. Keepers with jobs. Charge / cry
 
 **[Play Core Spire](https://starboltsprint.github.io/luminous-circuit-mobile-version-/)** — land true. The circuit answers.
 
+Capture / Grok Bot (same boot as desktop, no TanStack shell): [play.html](https://starboltsprint.github.io/luminous-circuit-mobile-version-/play.html). If the 3D is black and the HUD is up, add `?soft=1`.
+
 **Powered by xAI & YOU.** Not an official xAI product. Not Msg 1. Not a node SKU.
 
 Story beat: *Land true. The circuit answers.*
